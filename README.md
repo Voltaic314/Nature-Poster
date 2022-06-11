@@ -14,4 +14,4 @@ In the future I would love to use Deviant Art's actual API but there was not a p
 
 Thanks for reading. If you have questions feel free to reach out to me and if you have any suggestions on how to improve the code, feel free to make those suggestions to me! 
 
-You can visit my FB page for this project at https://www.facebook.com/Beautiful-Worlds-101111365975816/ 
+You can visit my FB page for this project at https://www.facebook.com/AutomaticNaturePosts/
