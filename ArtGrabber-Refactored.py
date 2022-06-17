@@ -1,18 +1,12 @@
-import \
-    config  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
-import \
-    requests  # needed to get image file size before we download images (to make sure we don't download images too large that we can't upload elsewhere).
+import config  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
+import requests  # needed to get image file size before we download images (to make sure we don't download images too large that we can't upload elsewhere).
 import os  # needed to get the file paths
-import \
-    random  # needed to pick a random subreddit to grab data from. In theory, you don't have to pick a random one, you could do all at once or just one, either or.
-from googleapiclient.discovery import \
-    build  # python.exe -m pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
-from google.oauth2 import \
-    service_account  # this and the above package are for the spreadsheet usage -- the pip command is a pain, so I pasted it above.
+import random  # needed to pick a random subreddit to grab data from. In theory, you don't have to pick a random one, you could do all at once or just one, either or.
+from googleapiclient.discovery import build  # python.exe -m pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+from google.oauth2 import service_account  # this and the above package are for the spreadsheet usage -- the pip command is a pain, so I pasted it above.
 from PIL import Image  # for image hashing
 import imagehash  # also, for image hashing
-import \
-    pytesseract  # used for optical character recognition within images, basically pulling text out of images, so we can analyze it
+import pytesseract  # used for optical character recognition within images, basically pulling text out of images, so we can analyze it
 import cv2  # used for parsing data and converting images before putting into tesseract OCR
 from bs4 import BeautifulSoup  # also, for web scraping -- mainly to read the HTML file
 
