@@ -1,4 +1,4 @@
-# DeviantArt-FBPoster
+# Art / Photo Poster
 
 These scripts were created by Logan Maupin. I'm a student at the University of Arizona (Online) studying Applied Computing - Applied Artificial Intelligence. My goal is to one day create AI that can communicate & interface with humans and potentially detect threats or save humanity in some way. Specifically my field of choice is Natural Language Processing. If you don't know what I mean, check out GPT-3 or Gopher as examples of what I am referring to in a way. 
 
