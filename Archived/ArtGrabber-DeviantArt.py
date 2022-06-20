@@ -1,1 +1,202 @@
-<div data-tbt="1" style="display: inline;">import config # used to get the secret sensitive info needed for our APIs - not uploaded to github for security purposes<br>import requests # needed to get image file size before we download images (to make sure we don't download images too large that we can't upload elsewhere).<br>import os # needed to get the file paths<br>import random # needed to pick a random subreddit to grab data from. In theory you don't have to pick a random one, you could do all at once or just one, either or.<br>from googleapiclient.discovery import build # python.exe -m pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib<br>from google.oauth2 import service_account # this and the above package are for the spreadsheet usage -- the pip command is a pain so I pasted it above.<br>from PIL import Image # for image hashing<br>import imagehash # also for image hashing<br>import pytesseract # used for optical character recognition within images, basically pulling text out of images so we can analyze it<br>import cv2 # used for parsing data and converting images before putting into tesseract OCR<br>from bs4 import BeautifulSoup # also for web scraping -- mainly to read the HTML file<br><br><br>SERVICE_ACCOUNT_FILE = '/home/pi/Documents/Programming-Projects/Art-Bot/keys.json' # points to the keys json file that holds the dictionary of the info we need.<br>SCOPES = ['https://www.googleapis.com/auth/spreadsheets'] # website to send the oauth info to gain access to our data<br><br>creds = None # writes this variable to no value before overwriting it with the info we need, basically cleaning and prepping it<br>creds = service_account.Credentials.from_service_account_file(<br>        SERVICE_ACCOUNT_FILE, scopes=SCOPES) #writes the creds value with the value from the keys json file above<br><br>service = build('sheets', 'v4', credentials=creds) # builds a package with all the above info and version we need and the right service we need<br><br># Call the Sheets API<br>sheet = service.spreadsheets()<br><br>result_da = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],<br>                            range="DeviantArt-Grabber-Log!A:F").execute()<br><br>values_da = result_da.get('values', []) #get values from spreadsheet<br><br>result_fb = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],<br>                            range="FB-Poster-Log!A:G").execute() # to specify this variable as all of the reddit grabber spreadsheet<br><br>values_fb = result_fb.get('values', []) #get values from spreadsheet<br><br>#flatten the list of lists returned from the deviant art log spreadsheet<br>flatlist_da = [item for items in values_da for item in items]<br><br>#flatten the list of lists returned from the FB poster log spreadsheet<br>flatlist_fb =[item for items in values_fb for item in items]<br><br>#list of bad words / topics to avoid in our posts<br>bad_topics = ["faggot", "femboy", "nigger", "fat", "skinny", "horny", "masturbate", "anal", "sex",<br>              "racist", "homophobic", "rape", "rapist", "BDSM", "dom", "fucked", "hentai",<br>              "Joe Biden", "Biden", "Trump", "Donald Trump", "disease", "symptom", "Parkinson", "Alzhemier", "memeory loss",<br>              "COVID", "covid-19", "blocked", "bacteria", "Pandemic", "quarantine", "NATO", "Ukraine", "Russia", "Putin", "fatal",<br>              "lethal", "no cure", "cock", "pussy", "dick", "vagina", "penis", "reddit",<br>              "u/", "/r/", "feminists", "qanon", "shooting", "Uvalde"]<br><br># List of sources to grab images from<br>deviant_art_source_list = ["https://www.deviantart.com/tag/naturephotography?order=all-time",<br>                           "https://www.deviantart.com/tag/naturephotograph?order=all-time",<br>                           "https://www.deviantart.com/tag/naturebeautiful?order=all-time",<br>                           "https://www.deviantart.com/tag/photographynature?order=all-time",<br>                           "https://www.deviantart.com/tag/animalphotography?order=all-time",<br>                           "https://www.deviantart.com/tag/wildlifephotography?order=all-time",<br>                           "https://www.deviantart.com/tag/seasidelandscape?order=all-time",<br>                           "https://www.deviantart.com/tag/travelphotography?order=all-time",<br>                           "https://www.deviantart.com/tag/flowerphotography?order=all-time"]<br><br>chosen_source = random.choice(deviant_art_source_list)<br><br># This is to pose as a windows chrome user to get the data we need a little better -- also some sites block python requests user headers<br>headers = {"User-Agent":"Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.2 (KHTML, like Gecko) Chrome/22.0.1216.0 Safari/537.2"}<br><br><br># Pick a random Deviant Art link to go to and make an HTTP request to get there<br>html_text = requests.get(chosen_source, headers=headers)<br><br># Print whichever link it choose<br>print("The chosen source was:\n" + str(chosen_source))<br><br># Parse the data from the site to grab the info we need<br>html_parse = BeautifulSoup(html_text.text, "html.parser")<br><br># Inspect the site and grab a certain number of image links and data from it<br>images_from_page = html_parse.find_all(class_='_3bcZ2 _2VvAH')<br><br># create empty list to store the image links in<br>all_images = []<br><br>for div in images_from_page:<br>    image_hrefs = div.find('a')['href']<br>    all_images.append(image_hrefs)<br><br>for link in all_images:<br><br>    #make sure the link we want to use is not already in the DA log sheet of images we've collected<br>    if link not in flatlist_da:<br><br>        # make sure the link we want to use is not already in the FB post log sheet of images we've posted<br>        if link not in flatlist_fb:<br><br>            # Make a new HTTP request to the image page itself (so we're grabbing the actual image, not the img preview).<br>            html_text_individual_image = requests.get(link, headers=headers)<br><br>            # parse the page of the image (like if you were to click on a post and open the image post page in its own tab)<br>            html_parse_individual_image = BeautifulSoup(html_text_individual_image.text, "html.parser")<br><br>            # Grab the image link for the original source image of the one we clicked on<br>            img_link = [img["src"] for img in html_parse_individual_image.select("._1cVSI img")]<br><br>            # convert the one and only "list" item from the above variable into a string that we can pass to requests next<br>            img_link_string = str(img_link[0])<br><br>            # make an HTTP request to the actual image link, not just the post page<br>            img_link_request = requests.get(img_link_string, headers=headers)<br><br>            # get image file size<br>            length = float(img_link_request.headers.get('content-length')) / 1000<br><br>            # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).<br>            if float(length) < 4000:<br><br>                # Get the span text after the image post title within the div<br>                span_tag = html_parse_individual_image.find('span', class_='_2P31x rNwfh')<br><br>                # Nuke that span out of existence<br>                span_tag.decompose()<br><br>                # Get the actual div we want without having to worry about that span nonsense text.<br>                img_caption_without_span = html_parse_individual_image.get_text()<br><br>                # Grab the caption / title of the image post<br>                img_caption = html_parse_individual_image.find('div', class_='_1FuUQ').text.strip()<br><br>                if not any(word in img_caption for word in bad_topics):<br><br>                    # Get the name of the user who posted the image for credit purposes<br>                    img_poster = str(html_parse_individual_image.find('span', class_='_2COLT').text)<br><br>                    # download the image from the "url" variable link using requests function<br>                    open("image.jpg", 'wb').write(img_link_request.content)<br><br>                    # hash the image we just saved<br>                    hash = imagehash.dhash(Image.open("image.jpg"))<br><br>                    hash_string = str(hash)<br><br>                    # check to make sure the hash of the image we just tested is in the DA spreadsheet. False means that it's not which means it's not a duplicate image (which is good).<br>                    check_hash_da = hash_string in flatlist_da<br><br>                    # check to make sure the hash of the image we just tested is in the reddit grabber spreadsheet. (We want false values only here).<br>                    check_hash_fb = hash_string in flatlist_fb<br><br>                    # make sure the image hash is not in the DA log sheet<br>                    if check_hash_da == False:<br><br>                        # make sure the image hash is not in the FB log sheet<br>                        if check_hash_fb == False:<br><br>                            ##run OCR<br>                            # point to where the tesseract files are in our directory<br>                            pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'<br><br>                            # read BGR values from image<br>                            img = cv2.imread('image.jpg')<br><br>                            # convert BGR values to RGB values<br>                            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)<br><br>                            # give us the resulting text (strings) from the image<br>                            ocr_result = pytesseract.image_to_string(img)<br>                            os.remove("image.jpg")  # remove the image we just saved (since we don't actually need the file after hashing it)<br><br><br>                            # this function converts the text from OCR into a list of individual strings, where each string is an element in a list<br>                            def Convert(string):<br>                                li = list(string.split(" "))<br>                                return li<br>                            list_text = Convert(ocr_result)<br><br>                            # this section cleans up the list to remove the "\n' from each string in the newly created list<br>                            # you may be wondering why we don't just use .strip() and that's because that's for strings and this is a list of strings so we have to iterate through the list to do that for each string in the list.<br>                            replaced_list = []<br>                            for string in list_text:<br>                                replaced_list.append(string.strip())<br><br>                            # check to see if within the image itself if there are bad words in the list above<br>                            check_ocr_bad_topics = [word for word in replaced_list if word in bad_topics]<br><br>                            # if no matches of bad topics in the ocr text, then proceed. But if so, try a new image.<br>                            if not check_ocr_bad_topics:<br><br>                                # create an empty list to store data<br>                                spreadsheet_values_append = []<br><br>                                # append list with data from variables above<br>                                spreadsheet_values_append.append([str(img_caption), str(img_poster), str(link), str(img_link_string), str(length), hash_string])<br><br>                                # send the 2d list we just made above to the spreadsheet API (writing to spreadsheet)<br>                                request = sheet.values().append(<br>                                    spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],<br>                                    range="DeviantArt-Grabber-Log!A:F", valueInputOption="RAW",<br>                                    body={"values": spreadsheet_values_append}).execute()<br><br>                                # print statement showing it was written -- in reality it would be better to chedc if one of the variables are actually in the spreadsheet, but this will work for now<br>                                print("Post logged to DA Spreadsheet")<br><br>                                # break out of the loop (good to go)<br>                                break<br><br>                            # if the post did not meet our criteria then start again until we find one that does<br>                            else:<br>                                continue<br><br># just for my own sanity, to make sure we completed the whole loop and script. THe proverbial "The end." lol<br>print("\nAll posts have been logged to the spreadsheet accordingly.")</div>
+import config  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
+import requests  # needed to get image file size before we download images (to make sure we don't download images too large that we can't upload elsewhere).
+import os  # needed to get the file paths
+import random  # needed to pick a random subreddit to grab data from. In theory, you don't have to pick a random one, you could do all at once or just one, either or.
+from googleapiclient.discovery import build  # python.exe -m pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+from google.oauth2 import service_account  # this and the above package are for the spreadsheet usage -- the pip command is a pain, so I pasted it above.
+from PIL import Image  # for image hashing
+import imagehash  # also, for image hashing
+import pytesseract  # used for optical character recognition within images, basically pulling text out of images, so we can analyze it
+import cv2  # used for parsing data and converting images before putting into tesseract OCR
+from bs4 import BeautifulSoup  # also, for web scraping -- mainly to read the HTML file
+
+
+def flatten(nested_list):
+    """
+    Flattens a nested list.
+    """
+    return [item for items in nested_list for item in items]
+
+
+def no_badwords(sentence):
+    """
+    Returns True if there is no bad-word
+    False otherwise
+    """
+    return not any(word in sentence for word in flatlist_bw)
+
+
+def write_image(content):
+    """
+    Write an image
+    and return its content and img_hash in str and hex dtype
+    """
+    open("image.jpg", 'wb').write(content)
+    img_hash = imagehash.dhash(Image.open("image.jpg"))
+    return img_hash, str(img_hash)
+
+
+def requests_get_info(info):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.2 (HTML, like Gecko) Chrome/22.0.1216.0 Safari/537.2"}
+    return requests.get(info, headers=headers)
+
+
+def parse(info):
+    return BeautifulSoup(info.text, "html.parser")
+
+
+def list_of_image_links(tag, class_):
+    return [img[tag] for img in html_parse_individual_image.select(class_)]
+
+
+def ocr_text():
+    """
+    Carry out OCR on an image according to
+    our requirements and return its text, and if it has a bad word
+    """
+    img = cv2.imread('image.jpg')
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    ocr_result = pytesseract.image_to_string(img)
+
+    os.remove("image.jpg")
+
+    ocr_text_list = [word.replace('\n', '') for word in ocr_result.split(' ')]
+
+    return ocr_text_list, no_badwords(ocr_text_list)
+
+
+def get_image(url):
+    """
+    Gets image from a link and returns its content
+    and size.
+    """
+    # defines R variable as grabbing data from our selected url
+    requests_content_length = requests.get(url)
+
+    # divides file size by 1000, so we can get how many kilobytes it is
+    length = float(requests_content_length.headers.get('content-length')) / 1000
+
+    return requests_content_length.content, length
+
+
+def get_image_title():
+    span_tag = html_parse_individual_image.find('span', class_='_2P31x rNwfh')
+    span_tag.decompose()
+    html_parse_individual_image.get_text()
+    return html_parse_individual_image.find('div', class_='_1FuUQ').text.strip()
+
+
+def log_to_sheet(two_d_list_to_send):
+    sheet.values().append(
+        spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
+        range="DeviantArt-Grabber-Log!A:F", valueInputOption="RAW",
+        body={"values": two_d_list_to_send}).execute()
+
+
+def get_user(self):
+    return str(self.find('span', class_='_2COLT').text)
+
+
+if __name__ == "__main__":
+
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+
+    SERVICE_ACCOUNT_FILE = '/home/pi/Documents/Programming-Projects/Art-Bot/keys.json'  # points to the keys json file that holds the dictionary of the info we need.
+    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
+
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)  # writes the creds value with the value from the keys json file above
+
+    service = build('sheets', 'v4',
+                    credentials=creds)  # builds a package with all the above info and version we need and the right service we need
+
+    # Call the Sheets API
+    sheet = service.spreadsheets()
+
+    result_da = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
+                                   range="DeviantArt-Grabber-Log!A:F").execute()
+    values_da = result_da.get('values', [])
+
+    result_fb = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
+                                   range="FB-Poster-Log!A:G").execute()
+    values_fb = result_fb.get('values', [])
+
+    result_bw = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
+                                   range="Bad-Topics-NSFW!A:A").execute()
+    values_bw = result_bw.get('values', [])
+
+    flatlist_da = flatten(values_da)
+    flatlist_fb = flatten(values_fb)
+    flatlist_bw = flatten(values_bw)
+
+    # List of sources to grab images from
+    deviant_art_source_list = ["https://www.deviantart.com/tag/naturephotography?order=all-time",
+                               "https://www.deviantart.com/tag/naturephotograph?order=all-time",
+                               "https://www.deviantart.com/tag/naturebeautiful?order=all-time",
+                               "https://www.deviantart.com/tag/photographynature?order=all-time",
+                               "https://www.deviantart.com/tag/animalphotography?order=all-time",
+                               "https://www.deviantart.com/tag/wildlifephotography?order=all-time",
+                               "https://www.deviantart.com/tag/seasidelandscape?order=all-time",
+                               "https://www.deviantart.com/tag/travelphotography?order=all-time",
+                               "https://www.deviantart.com/tag/flowerphotography?order=all-time",
+                               "https://www.deviantart.com/tag/oceanlandscape?order=all-time"]
+
+    chosen_source = random.choice(deviant_art_source_list)
+    # This is to pose as a windows chrome user to get the data we need a little better -- also some sites block python requests user headers
+    print("The chosen source was:\n" + str(chosen_source))
+    html_text = requests_get_info(chosen_source)
+    html_parse = BeautifulSoup(html_text.text, "html.parser")
+    images_from_page = html_parse.find_all(class_='_3bcZ2 _2VvAH')
+
+    # create empty list to store the image links in
+    all_images = []
+
+    count = 0
+
+    for div in images_from_page:
+        image_hrefs = div.find('a')['href']
+        all_images.append(image_hrefs)
+
+    for link in all_images:
+
+        # make sure the link we want to use is not already in the DA log sheet of images we've collected
+        if link not in (flatlist_da + flatlist_fb):
+
+            # Make a new HTTP request to the image page itself (so we're grabbing the actual image, not the img preview).
+            html_text_individual_image = requests_get_info(link)
+            html_parse_individual_image = parse(html_text_individual_image)
+            img_link = list_of_image_links("src", "._1cVSI img")
+            img_link_string = str(img_link[0])
+
+            image_content, image_length = get_image(img_link_string)
+
+            # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
+            if image_length < 4000:
+
+                img_caption = get_image_title()
+                if no_badwords(img_caption):
+
+                    # Get the name of the user who posted the image for credit purposes
+                    img_poster = get_user(html_parse_individual_image)
+
+                    # img_hash the image we just saved
+                    image_hash, hash_str = write_image(image_content)
+
+                    # make sure the image img_hash is not in the DA log sheet
+                    if hash_str not in (flatlist_da + flatlist_fb):
+                        image_text = ocr_text()
+                        if no_badwords(image_text):
+                            spreadsheet_values_to_send = [
+                                [str(img_caption), str(img_poster), str(link), str(img_link_string), str(image_length),
+                                 hash_str]]
+                            log_to_sheet(spreadsheet_values_to_send)
+                            print("Post logged to DA Spreadsheet")
+                            break
+
+                        # if the post did not meet our criteria then start again until we find one that does
+                        else:
+                            continue
+
+# just for my own sanity, to make sure we completed the whole loop and script. THe proverbial "The end." lol
+print("\nAll posts have been logged to the spreadsheet accordingly.")
