@@ -114,7 +114,7 @@ def process_photos(photos):
                             if no_badwords(image_text):
 
                                 spreadsheet_values_to_send = [
-                                    [str(photo_name), str(photo_id), str(photo_user), str(photo_permalink),
+                                    [str(photo_name), str(photo_user), str(photo_id), str(photo_permalink),
                                      str(photo_url), str(photo_size),
                                      hash_str]]
 
@@ -142,10 +142,10 @@ def main():
 
 
 if __name__ == "__main__":
-    pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
-    SERVICE_ACCOUNT_FILE = 'keys.json'  # points to the keys json file that holds the dictionary of the info we need.
+    SERVICE_ACCOUNT_FILE = '/home/pi/Documents/Programming-Projects/Art-Bot/keys.json'  # points to the keys json file that holds the dictionary of the info we need.
     SCOPES = [
         'https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
     creds = service_account.Credentials.from_service_account_file(
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     # Call the Sheets API
     sheet = service.spreadsheets()
     result_fb = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                   range="FB-Poster-Log!A:G").execute()
+                                   range="FB-Poster-PE-Log!A:I").execute()
     values_fb = result_fb.get('values', [])
     result_bw = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
                                    range="Bad-Topics-NSFW!A:A").execute()
@@ -172,7 +172,6 @@ if __name__ == "__main__":
     flatlist_bw = flatten(values_bw)  # list of bad words to avoid
     flatlist_ps = flatten(values_ps)  # list of art sources to use from Pexels
     randomly_chosen = str(random.choice(flatlist_ps))
-    print(randomly_chosen)
 
     main()
 
