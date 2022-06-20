@@ -75,102 +75,106 @@ def log_to_sheet(two_d_list_to_send):
         range="Pexels-Grabber-Log!A:G", valueInputOption="RAW",
         body={"values": two_d_list_to_send}).execute()
 
+
+def acceptable_extension(photo_extension):
+    extensions = ['jpg', 'jpeg', 'png', 'webp']
+    return any(extensions in photo_extension for extensions in extensions)
+
+def process_photos(photos):
+
+    spreadsheet_values_to_send = []
+
+    for photo in photos:
+        photo_name = photo.description
+        photo_user = photo.photographer
+        photo_id = photo.id
+        photo_permalink = photo.url
+        photo_extension = photo.extension
+        photo_url = photo.large
+        photo_size = get_image(photo.large)
+
+        if acceptable_extension(photo_extension):
+
+            # make sure the link we want to use is not already in the DA log sheet of images we've collected
+            if photo_id not in (flatlist_pe + flatlist_fb):
+
+                # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
+                if photo_size < 4000:
+
+                    if no_badwords(photo_name):
+
+                        # img_hash the image we just saved
+                        image_hash, hash_str = write_image(photo_url)
+
+                        # make sure the image img_hash is not in the DA log sheet
+                        if hash_str not in (flatlist_pe + flatlist_fb):
+
+                            image_text = ocr_text()
+
+                            if no_badwords(image_text):
+
+                                spreadsheet_values_to_send = [
+                                    [str(photo_name), str(photo_id), str(photo_user), str(photo_permalink),
+                                     str(photo_url), str(photo_size),
+                                     hash_str]]
+
+                                log_to_sheet(spreadsheet_values_to_send)
+
+                                print("Post logged to Pexels Log Spreadsheet")
+
+                                break
+
+                            # if the post did not meet our criteria then start again until we find one that does
+                            else:
+                                continue
+    return spreadsheet_values_to_send
+
+
+def main():
+    global service, done
+    api.search(str(random.choice(flatlist_ps)), page=1, results_per_page=15)
+
+    done = False
+    while not done:
+        done = process_photos(photos=api.get_entries())
+        if not done:
+            api.search_next_page()
+
+
 if __name__ == "__main__":
-
     pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
-
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
-
     api = API(PEXELS_API_KEY)
-
     SERVICE_ACCOUNT_FILE = 'keys.json'  # points to the keys json file that holds the dictionary of the info we need.
-    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
-
+    SCOPES = [
+        'https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
     creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)  # writes the creds value with the value from the keys json file above
-
+        SERVICE_ACCOUNT_FILE,
+        scopes=SCOPES)  # writes the creds value with the value from the keys json file above
     service = build('sheets', 'v4',
                     credentials=creds)  # builds a package with all the above info and version we need and the right service we need
-
     # Call the Sheets API
     sheet = service.spreadsheets()
-
     result_fb = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
                                    range="FB-Poster-Log!A:G").execute()
     values_fb = result_fb.get('values', [])
-
     result_bw = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
                                    range="Bad-Topics-NSFW!A:A").execute()
     values_bw = result_bw.get('values', [])
-
     result_pe = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
                                    range="Pexels-Grabber-Log!A:G").execute()
     values_pe = result_pe.get('values', [])
-
     result_ps = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
                                    range="Pexels-Sources!A:A").execute()
     values_ps = result_ps.get('values', [])
-
-    flatlist_pe = flatten(values_pe) # Pexels Log Sheet
-    flatlist_fb = flatten(values_fb) # FB Log Sheet
-    flatlist_bw = flatten(values_bw) # list of bad words to avoid
-    flatlist_ps = flatten(values_ps) # list of art sources to use from Pexels
-
-    current_row_count = (int(len(flatlist_pe)) / 7)
-
-    print(current_row_count)
-
+    flatlist_pe = flatten(values_pe)  # Pexels Log Sheet
+    flatlist_fb = flatten(values_fb)  # FB Log Sheet
+    flatlist_bw = flatten(values_bw)  # list of bad words to avoid
+    flatlist_ps = flatten(values_ps)  # list of art sources to use from Pexels
     randomly_chosen = str(random.choice(flatlist_ps))
+    print(randomly_chosen)
 
-    chosen_source = api.search("Sunset")
-    photos = api.get_entries()
-
-    count = 0
-
-for photo in photos:
-    photo_name = photo.description
-    photo_user = photo.photographer
-    photo_id = photo.id
-    photo_permalink = photo.url
-    photo_extension = photo.extension
-    photo_url = photo.large
-    photo_size = get_image(photo.large)
-
-    # make sure the link we want to use is not already in the DA log sheet of images we've collected
-    if photo_id not in (flatlist_pe + flatlist_fb):
-
-        # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
-        if photo_size < 4000:
-
-            if no_badwords(photo_name):
-
-                # img_hash the image we just saved
-                image_hash, hash_str = write_image(photo_url)
-
-                # make sure the image img_hash is not in the DA log sheet
-                if hash_str not in (flatlist_pe + flatlist_fb):
-                    image_text = ocr_text()
-                    if no_badwords(image_text):
-                        spreadsheet_values_to_send = [
-                            [str(photo_name), str(photo_id), str(photo_user), str(photo_permalink), str(photo_url), str(photo_size),
-                             hash_str]]
-                        log_to_sheet(spreadsheet_values_to_send)
-                        print("Post logged to Pexels Log Spreadsheet")
-
-                        if spreadsheet_values_to_send:
-                            count += 1
-                            if count == 1:
-                                break
-
-                        # go to the next page and try results from it instead
-                        else:
-                            api.search_next_page()
-                            continue
-
-                    # if the post did not meet our criteria then start again until we find one that does
-                    else:
-                        continue
-
+    main()
 
 # just for my own sanity, to make sure we completed the whole loop and script. THe proverbial "The end." lol
 print("\nAll posts have been logged to the spreadsheet accordingly.")
