@@ -80,12 +80,15 @@ def acceptable_extension(photo_extension):
     extensions = ['jpg', 'jpeg', 'png', 'webp']
     return any(extensions in photo_extension for extensions in extensions)
 
+def string_replace(string):
+    return string.replace("-", " ")
+
 def process_photos(photos):
 
     spreadsheet_values_to_send = []
 
     for photo in photos:
-        photo_name = photo.description
+        photo_name = string_replace(photo.description)
         photo_user = photo.photographer
         photo_id = photo.id
         photo_permalink = photo.url
@@ -172,6 +175,7 @@ if __name__ == "__main__":
     flatlist_bw = flatten(values_bw)  # list of bad words to avoid
     flatlist_ps = flatten(values_ps)  # list of art sources to use from Pexels
     randomly_chosen = str(random.choice(flatlist_ps))
+    print(randomly_chosen)
 
     main()
 
