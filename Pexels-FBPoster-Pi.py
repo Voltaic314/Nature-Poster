@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
                 # edit caption of existing fb post we just made
                 fb.put_object(parent_object=fb_page_id + '_' + post_id, connection_name='',
-                              message="Original caption: " + '"' + chosen_title + '"' + "\n\nOriginally posted by: " + '"' + chosen_user + '"' + " on Pexels." + "\n\nP.S. This Facebook post was created by a bot. To learn more about how it works, check out the Github page here: https://github.com/Voltaic314/Art-Poster")
+                              message="Description: " + '"' + chosen_title + '"' + "\n\nOriginally posted by: " + '"' + chosen_user + '"' + " on Pexels." + "\n\nP.S. This Facebook post was created by a bot. To learn more about how it works, check out the Github page here: https://github.com/Voltaic314/Art-Poster")
 
                 count += 5  # increases the count so that this breaks the loop later
 
