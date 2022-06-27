@@ -9,7 +9,7 @@ import facebook  # to add captions and comments to existing posts.
 import json  # to decipher the dictionary we get back in return from FB servers. (Mainly this is used to edit captions to the posts).
 import numpy as np
 
-def formatted_parameters(title, user, id, permalink, url, size, hash):
+def formatted_parameters(title, user, id, permalink, url, original, size, hash):
     """
     Accepts a submission object and returns
     the parameters formatted as a list
@@ -20,6 +20,7 @@ def formatted_parameters(title, user, id, permalink, url, size, hash):
         , id
         , f"https://www.reddit.com{permalink}"
         , url
+        , original
         , size
         , hash]
 
@@ -95,8 +96,9 @@ if __name__ == '__main__':
         chosen_id = str(chosen_post[2])
         chosen_permalink = str(chosen_post[3])
         chosen_url = str(chosen_post[4])
-        chosen_size = str(chosen_post[5])
-        chosen_hash = str(chosen_post[6])
+        chosen_original = str(chosen_post[5])
+        chosen_size = str(chosen_post[6])
+        chosen_hash = str(chosen_post[7)
 
         # make sure that the hash did not come up in the search results - if none then it's not a duplicate image
         if chosen_hash not in flatlist_fb:
@@ -121,7 +123,7 @@ if __name__ == '__main__':
                 sheet_append(one_d_list_to_two_d_list(spreadsheet_values_to_log))
                 print("Logged to FB Poster Spreadsheet")
 
-                chosen_generated = [chosen_title, chosen_user, chosen_id, chosen_permalink, chosen_url, chosen_size, chosen_hash]
+                chosen_generated = [chosen_title, chosen_user, chosen_id, chosen_permalink, chosen_url, chosen_original, chosen_size, chosen_hash]
                 values_pe.remove(chosen_generated)
                 clear_spreadsheet()
                 rewrite_spreadsheet(values_pe)
