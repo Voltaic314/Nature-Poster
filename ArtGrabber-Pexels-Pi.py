@@ -91,44 +91,47 @@ def process_photos(photos):
         photo_permalink = photo.url
         photo_extension = photo.extension
         photo_url = photo.large
+        photo_original = photo.original
         photo_size = get_image(photo.large)
 
         if acceptable_extension(photo_extension):
 
             # make sure the link we want to use is not already in the DA log sheet of images we've collected
-            if photo_id not in flatlist_pe and flatlist_fb:
+            if photo_id not in flatlist_pe:
 
-                # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
-                if photo_size < 4000:
+                if photo_id not in flatlist_fb:
 
-                    if no_badwords(photo_name):
+                    # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
+                    if photo_size < 4000:
 
-                        # img_hash the image we just saved
-                        image_hash, hash_str = write_image(photo_url)
+                        if no_badwords(photo_name):
 
-                        # make sure the image img_hash is not in the DA log sheet
-                        if hash_str not in flatlist_pe:
+                            # img_hash the image we just saved
+                            image_hash, hash_str = write_image(photo_url)
 
-                            if hash_str not in flatlist_fb:
+                            # make sure the image img_hash is not in the DA log sheet
+                            if hash_str not in flatlist_pe:
 
-                                image_text = ocr_text()
+                                if hash_str not in flatlist_fb:
 
-                                if no_badwords(image_text):
+                                    image_text = ocr_text()
 
-                                    spreadsheet_values_to_send = [
-                                        [str(photo_name), str(photo_user), str(photo_id), str(photo_permalink),
-                                         str(photo_url), str(photo_size),
-                                         hash_str]]
+                                    if no_badwords(image_text):
 
-                                    log_to_sheet(spreadsheet_values_to_send)
+                                        spreadsheet_values_to_send = [
+                                            [str(photo_name), str(photo_user), str(photo_id), str(photo_permalink),
+                                             str(photo_url), str(photo_original), str(photo_size),
+                                             hash_str]]
 
-                                    print("Post logged to Pexels Log Spreadsheet")
+                                        log_to_sheet(spreadsheet_values_to_send)
 
-                                    break
+                                        print("Post logged to Pexels Log Spreadsheet")
 
-                                # if the post did not meet our criteria then start again until we find one that does
-                                else:
-                                    continue
+                                        break
+
+                                    # if the post did not meet our criteria then start again until we find one that does
+                                    else:
+                                        continue
     return spreadsheet_values_to_send
 
 
