@@ -47,7 +47,7 @@ def rewrite_spreadsheet(values):
 
 def sheet_append(one_d_list):
     log_to_fb_sheet = sheet.values().append(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                            range="FB-Poster-PE-Log!A:I", valueInputOption="USER_ENTERED",
+                                            range="FB-Poster-PE-Log!A:J", valueInputOption="USER_ENTERED",
                                             body={"values": one_d_list}).execute()
 
 
@@ -119,7 +119,7 @@ if __name__ == '__main__':
             if fb_page_id in return_text_str:
 
                 spreadsheet_values_to_log = [dt_string, return_text_str, chosen_title, chosen_user, chosen_id, chosen_permalink,
-                                             chosen_url, chosen_size, chosen_hash]
+                                             chosen_url, chosen_original, chosen_size, chosen_hash]
                 sheet_append(one_d_list_to_two_d_list(spreadsheet_values_to_log))
                 print("Logged to FB Poster Spreadsheet")
 
