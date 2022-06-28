@@ -87,7 +87,7 @@ def process_photos(photos):
     for photo in photos:
         photo_name = string_replace(photo.description)
         photo_user = photo.photographer
-        photo_id = photo.id
+        photo_id = str(photo.id)
         photo_permalink = photo.url
         photo_extension = photo.extension
         photo_url = photo.large
@@ -96,10 +96,12 @@ def process_photos(photos):
 
         if acceptable_extension(photo_extension):
 
+            check_id_pe = bool(photo_id not in flatlist_pe)
+            check_id_fb = bool(photo_id not in flatlist_fb)
             # make sure the link we want to use is not already in the DA log sheet of images we've collected
-            if photo_id not in flatlist_pe:
+            if check_id_pe:
 
-                if photo_id not in flatlist_fb:
+                if check_id_fb:
 
                     # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
                     if photo_size < 4000:
