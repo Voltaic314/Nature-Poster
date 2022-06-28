@@ -71,7 +71,7 @@ def get_image(url):
 def log_to_sheet(two_d_list_to_send):
     sheet.values().append(
         spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-        range="Pexels-Grabber-Log!A:G", valueInputOption="RAW",
+        range="Pexels-Grabber-Log!A:H", valueInputOption="RAW",
         body={"values": two_d_list_to_send}).execute()
 
 
@@ -157,13 +157,13 @@ if __name__ == "__main__":
     # Call the Sheets API
     sheet = service.spreadsheets()
     result_fb = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                   range="FB-Poster-PE-Log!A:I").execute()
+                                   range="FB-Poster-PE-Log!A:J").execute()
     values_fb = result_fb.get('values', [])
     result_bw = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
                                    range="Bad-Topics-NSFW!A:A").execute()
     values_bw = result_bw.get('values', [])
     result_pe = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                   range="Pexels-Grabber-Log!A:G").execute()
+                                   range="Pexels-Grabber-Log!A:H").execute()
     values_pe = result_pe.get('values', [])
     result_ps = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
                                    range="Pexels-Sources!A:A").execute()
