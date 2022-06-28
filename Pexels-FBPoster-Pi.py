@@ -89,7 +89,7 @@ if __name__ == '__main__':
         chosen_post = random.choice(values_pe)
 
         formatted_parameters(chosen_post[0], chosen_post[1], chosen_post[2], chosen_post[3], chosen_post[4],
-                             chosen_post[5], chosen_post[6])
+                             chosen_post[5], chosen_post[6], chosen_post[7])
 
         chosen_title = str(chosen_post[0])
         chosen_user = str(chosen_post[1])
@@ -98,7 +98,7 @@ if __name__ == '__main__':
         chosen_url = str(chosen_post[4])
         chosen_original = str(chosen_post[5])
         chosen_size = str(chosen_post[6])
-        chosen_hash = str(chosen_post[7)
+        chosen_hash = str(chosen_post[7])
 
         # make sure that the hash did not come up in the search results - if none then it's not a duplicate image
         if chosen_hash not in flatlist_fb:
