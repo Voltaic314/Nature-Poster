@@ -36,12 +36,12 @@ def one_d_list_to_two_d_list(self):
 
 def clear_spreadsheet():
     request_clear = sheet.values().clear(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                         range="Pexels-Grabber-Log!A:G").execute()
+                                         range="Pexels-Grabber-Log!A:H").execute()
 
 
 def rewrite_spreadsheet(values):
     request_rewrite = sheet.values().update(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                            range="Pexels-Grabber-Log!A:G", valueInputOption="RAW",
+                                            range="Pexels-Grabber-Log!A:H", valueInputOption="RAW",
                                             body={"values": values}).execute()
 
 
