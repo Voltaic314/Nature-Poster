@@ -70,10 +70,10 @@ if __name__ == '__main__':
     service = build('sheets', 'v4', credentials=creds)
     sheet = service.spreadsheets()
     result_fb = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                   range="FB-Poster-PE-Log!A:I").execute()
+                                   range="FB-Poster-PE-Log!A:J").execute()
     values_fb = result_fb.get('values', [])
     result_pe = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                   range="Pexels-Grabber-Log!A:G").execute()
+                                   range="Pexels-Grabber-Log!A:H").execute()
     values_pe = result_pe.get('values', [])
 
     flatlist_rg = flatten(values_pe)
