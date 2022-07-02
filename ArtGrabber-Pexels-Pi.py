@@ -8,7 +8,7 @@ from PIL import Image  # for image hashing
 import imagehash  # also, for image hashing
 import pytesseract  # used for optical character recognition within images, basically pulling text out of images, so we can analyze it
 import cv2  # used for parsing data and converting images before putting into tesseract OCR
-from pexels_api import API # need this to get images to use from Pexels
+from pexels_api import API # need this to get images to use from Pexels (our source of images for the project)
 
 
 def flatten(nested_list):
@@ -111,10 +111,13 @@ def process_photos(photos):
                             # img_hash the image we just saved
                             image_hash, hash_str = write_image(photo_url)
 
-                            # make sure the image img_hash is not in the DA log sheet
-                            if hash_str not in flatlist_pe:
+                            check_hash_pe = hash_str not in flatlist_pe
+                            check_hash_fb = hash_str not in flatlist_fb
 
-                                if hash_str not in flatlist_fb:
+                            # make sure the image img_hash is not in the DA log sheet
+                            if check_hash_pe:
+
+                                if check_hash_fb:
 
                                     image_text = ocr_text()
 
