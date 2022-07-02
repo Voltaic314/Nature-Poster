@@ -8,7 +8,7 @@ from PIL import Image  # for image hashing
 import imagehash  # also, for image hashing
 import pytesseract  # used for optical character recognition within images, basically pulling text out of images, so we can analyze it
 import cv2  # used for parsing data and converting images before putting into tesseract OCR
-from pexels_api import API # need this to get images to use from Pexels
+from pexels_api import API # need this to get images to use from Pexels (our source of images for the project)
 
 
 def flatten(nested_list):
@@ -111,10 +111,13 @@ def process_photos(photos):
                             # img_hash the image we just saved
                             image_hash, hash_str = write_image(photo_url)
 
-                            # make sure the image img_hash is not in the DA log sheet
-                            if hash_str not in flatlist_pe:
+                            check_hash_pe = hash_str not in flatlist_pe
+                            check_hash_fb = hash_str not in flatlist_fb
 
-                                if hash_str not in flatlist_fb:
+                            # make sure the image img_hash is not in the DA log sheet
+                            if check_hash_pe:
+
+                                if check_hash_fb:
 
                                     image_text = ocr_text()
 
@@ -149,10 +152,10 @@ def main():
 
 
 if __name__ == "__main__":
-    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+    pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
-    SERVICE_ACCOUNT_FILE = '/home/pi/Documents/Programming-Projects/Art-Bot/keys.json'  # points to the keys json file that holds the dictionary of the info we need.
+    SERVICE_ACCOUNT_FILE = 'keys.json'  # points to the keys json file that holds the dictionary of the info we need.
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
     creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)  # writes the creds value with the value from the keys json file above
     service = build('sheets', 'v4', credentials=creds)  # builds a package with all the above info and version we need and the right service we need
