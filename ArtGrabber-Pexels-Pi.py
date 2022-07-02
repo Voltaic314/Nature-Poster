@@ -152,10 +152,10 @@ def main():
 
 
 if __name__ == "__main__":
-    pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
-    SERVICE_ACCOUNT_FILE = 'keys.json'  # points to the keys json file that holds the dictionary of the info we need.
+    SERVICE_ACCOUNT_FILE = '/home/pi/Documents/Programming-Projects/Art-Bot/keys.json'  # points to the keys json file that holds the dictionary of the info we need.
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
     creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)  # writes the creds value with the value from the keys json file above
     service = build('sheets', 'v4', credentials=creds)  # builds a package with all the above info and version we need and the right service we need
