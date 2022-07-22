@@ -182,4 +182,4 @@ if __name__ == "__main__":
     main()
 
 # just for my own sanity, to make sure we completed the whole loop and script. THe proverbial "The end." lol
-print("\nAll posts have been logged to the spreadsheet accordingly.")
+print("\nPhoto has been logged to the spreadsheet accordingly.")
