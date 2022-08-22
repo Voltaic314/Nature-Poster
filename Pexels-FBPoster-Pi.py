@@ -104,7 +104,7 @@ if __name__ == '__main__':
         if chosen_hash not in flatlist_fb:
 
             msg = chosen_url
-            post_url = 'https://graph.facebook.com/{}/photos'.format(fb_page_id)
+            post_url = 'https://graph.facebook.com/{}/videos'.format(fb_page_id)
             payload = {
                 "url": msg,
                 "access_token": config.config_stuff['FB_Access_Token']

@@ -51,7 +51,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('nb!photo'):
+    if message.content.startswith('nb!video'):
         await message.channel.send(generate_message())
         return
 

@@ -66,7 +66,7 @@ for string in values_da:
         # make sure that the hash did not come up in the search results - if none then it's not a duplicate image
         msg = str(random_url)  # the message we are sending to the fb server and make sure it's a string
 
-        post_url = 'https://graph.facebook.com/{}/photos'.format(page_id)  # url that we will send our HTTP request to - to post it to FB
+        post_url = 'https://graph.facebook.com/{}/videos'.format(page_id)  # url that we will send our HTTP request to - to post it to FB
 
         payload = {
             "url": msg,  # injecting our str(url) into the "url" section of the link itself
@@ -97,7 +97,7 @@ for string in values_da:
                 [dt_string, r_text_str, random_title, random_user, random_permalink_string, random_url, random_size,
                  random_hash])
 
-            # Now that we posted the photo, we want to log it so that we don't post it again (and good for tracking purposes too).
+            # Now that we posted the video, we want to log it so that we don't post it again (and good for tracking purposes too).
             request = sheet.values().append(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
                                             range="FB-Poster-Log!A:H", valueInputOption="USER_ENTERED",
                                             body={"values": spreadsheet_values_append}).execute()  # this appends the spreadsheet to fit the list (row) of data onto the last row of the values.
