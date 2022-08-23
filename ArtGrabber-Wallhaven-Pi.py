@@ -74,42 +74,41 @@ def log_to_sheet(two_d_list_to_send):
         range="Pexels-Grabber-Log!A:H", valueInputOption="RAW",
         body={"values": two_d_list_to_send}).execute()
 
-
-def acceptable_extension(photo_extension):
+def acceptable_extension(video_extension):
     extensions = ['jpg', 'jpeg', 'png', 'webp']
-    return any(extensions in photo_extension for extensions in extensions)
+    return any(extensions in video_extension for extensions in extensions)
 
 def string_replace(string):
     return string.replace("-", " ")
 
-def process_photos(photos):
+def process_videos(videos):
     spreadsheet_values_to_send = []
-    for photo in photos:
-        photo_name = string_replace(photo.description)
-        photo_user = photo.photographer
-        photo_id = str(photo.id)
-        photo_permalink = photo.url
-        photo_extension = photo.extension
-        photo_url = photo.large
-        photo_original = photo.original
-        photo_size = get_image(photo.large)
+    for video in videos:
+        video_name = string_replace(video.description)
+        video_user = video.videographer
+        video_id = str(video.id)
+        video_permalink = video.url
+        video_extension = video.extension
+        video_url = video.large
+        video_original = video.original
+        video_size = get_image(video.large)
 
-        if acceptable_extension(photo_extension):
+        if acceptable_extension(video_extension):
 
-            check_id_pe = bool(photo_id not in flatlist_pe)
-            check_id_fb = bool(photo_id not in flatlist_fb)
+            check_id_pe = bool(video_id not in flatlist_pe)
+            check_id_fb = bool(video_id not in flatlist_fb)
             # make sure the link we want to use is not already in the DA log sheet of images we've collected
             if check_id_pe:
 
                 if check_id_fb:
 
                     # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
-                    if photo_size < 4000:
+                    if video_size < 4000:
 
-                        if no_badwords(photo_name):
+                        if no_badwords(video_name):
 
                             # img_hash the image we just saved
-                            image_hash, hash_str = write_image(photo_url)
+                            image_hash, hash_str = write_image(video_url)
 
                             check_hash_pe = hash_str not in flatlist_pe
                             check_hash_fb = hash_str not in flatlist_fb
@@ -124,8 +123,8 @@ def process_photos(photos):
                                     if no_badwords(image_text):
 
                                         spreadsheet_values_to_send = [
-                                            [str(photo_name), str(photo_user), str(photo_id), str(photo_permalink),
-                                             str(photo_url), str(photo_original), str(photo_size),
+                                            [str(video_name), str(video_user), str(video_id), str(video_permalink),
+                                             str(video_url), str(video_original), str(video_size),
                                              hash_str]]
 
                                         log_to_sheet(spreadsheet_values_to_send)
@@ -146,7 +145,7 @@ def main():
 
     done = False
     while not done:
-        done = process_photos(photos=api.get_entries())
+        done = process_videos(videos=api.get_entries())
         if not done:
             api.search_next_page()
 
