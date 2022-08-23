@@ -131,15 +131,15 @@ if __name__ == "__main__":
     flatlist_bw = flatten(values_bw)
 
     # List of sources to grab images from
-    deviant_art_source_list = ["https://www.deviantart.com/tag/naturephotography?order=all-time",
-                               "https://www.deviantart.com/tag/naturephotograph?order=all-time",
+    deviant_art_source_list = ["https://www.deviantart.com/tag/naturevideography?order=all-time",
+                               "https://www.deviantart.com/tag/naturevideograph?order=all-time",
                                "https://www.deviantart.com/tag/naturebeautiful?order=all-time",
-                               "https://www.deviantart.com/tag/photographynature?order=all-time",
-                               "https://www.deviantart.com/tag/animalphotography?order=all-time",
-                               "https://www.deviantart.com/tag/wildlifephotography?order=all-time",
+                               "https://www.deviantart.com/tag/videographynature?order=all-time",
+                               "https://www.deviantart.com/tag/animalvideography?order=all-time",
+                               "https://www.deviantart.com/tag/wildlifevideography?order=all-time",
                                "https://www.deviantart.com/tag/seasidelandscape?order=all-time",
-                               "https://www.deviantart.com/tag/travelphotography?order=all-time",
-                               "https://www.deviantart.com/tag/flowerphotography?order=all-time",
+                               "https://www.deviantart.com/tag/travelvideography?order=all-time",
+                               "https://www.deviantart.com/tag/flowervideography?order=all-time",
                                "https://www.deviantart.com/tag/oceanlandscape?order=all-time"]
 
     chosen_source = random.choice(deviant_art_source_list)

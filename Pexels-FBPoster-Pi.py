@@ -104,7 +104,7 @@ if __name__ == '__main__':
         if chosen_hash not in flatlist_fb:
 
             msg = chosen_url
-            post_url = 'https://graph.facebook.com/{}/photos'.format(fb_page_id)
+            post_url = 'https://graph.facebook.com/{}/videos'.format(fb_page_id)
             payload = {
                 "url": msg,
                 "access_token": config.config_stuff['FB_Access_Token']
@@ -132,8 +132,7 @@ if __name__ == '__main__':
                 fb = facebook.GraphAPI(access_token=config.config_stuff['FB_Access_Token'])
 
                 # edit caption of existing fb post we just made
-                fb.put_object(parent_object=fb_page_id + '_' + post_id, connection_name='',
-                              message="Description: " + '"' + chosen_title + "\n\nPexels image link: " + chosen_permalink + "\n\nP.S. This Facebook post was created by a bot. To learn more about how it works, check out the Github page here: https://github.com/Voltaic314/Nature-Poster")
+                fb.put_object(parent_object=fb_page_id + '_' + post_id, connection_name='', message="Description: " + '"' + chosen_title + "\n\nPexels image link: " + chosen_permalink + "\n\nP.S. This Facebook post was created by a bot. To learn more about how it works, check out the Github page here: https://github.com/Voltaic314/Nature-Poster")
 
                 count += 5  # increases the count so that this breaks the loop later
 
