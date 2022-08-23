@@ -1,10 +1,9 @@
 import config  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
 import requests  # needed to get image file size before we download images (to make sure we don't download images too large that we can't upload elsewhere).
-import os  # needed to get the file paths
 import random  # needed to pick a random subreddit to grab data from. In theory, you don't have to pick a random one, you could do all at once or just one, either or.
 from googleapiclient.discovery import build  # python.exe -m pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 from google.oauth2 import service_account  # this and the above package are for the spreadsheet usage -- the pip command is a pain, so I pasted it above.
-from pexels_api_custom_voltaic import API # need this to get images to use from Pexels (our source of images for the project)
+from pexels_api import API, API_V # need this to get images to use from Pexels (our source of images for the project)
 
 def flatten(nested_list):
     """
@@ -67,9 +66,9 @@ def process_videos(videos):
             if check_id_fb:
 
                 # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
-                if video_size < 1000000:
+                if video_duration < 1200:
 
-                    if video_duration < 1200:
+                    if video_size < 1000000:
 
                         if no_badwords(video_name):
 
@@ -103,7 +102,7 @@ def main():
 
 if __name__ == "__main__":
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
-    api = API(PEXELS_API_KEY)
+    api = API_V(PEXELS_API_KEY)
     SERVICE_ACCOUNT_FILE = '/home/pi/Documents/Programming-Projects/Art-Bot/keys.json'  # points to the keys json file that holds the dictionary of the info we need.
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
     creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)  # writes the creds value with the value from the keys json file above

@@ -74,7 +74,6 @@ def log_to_sheet(two_d_list_to_send):
         range="Pexels-Grabber-Log!A:H", valueInputOption="RAW",
         body={"values": two_d_list_to_send}).execute()
 
-
 def acceptable_extension(photo_extension):
     extensions = ['jpg', 'jpeg', 'png', 'webp']
     return any(extensions in photo_extension for extensions in extensions)
