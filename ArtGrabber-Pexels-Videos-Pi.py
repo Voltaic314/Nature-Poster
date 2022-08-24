@@ -70,22 +70,24 @@ def process_videos(videos):
 
                     if video_size < 1000000:
 
-                        if no_badwords(video_name):
+                        if width >= 1920 and height >= 1080:
 
-                            spreadsheet_values_to_send = [
-                                [str(video_name), str(video_user), str(video_id), str(video_permalink),
-                                 str(video_url), str(video_original), str(video_size),
-                                 hash_str]]
+                            if no_badwords(video_name):
 
-                            log_to_sheet(spreadsheet_values_to_send)
+                                spreadsheet_values_to_send = [
+                                    [str(video_name), str(video_user), str(video_id), str(video_permalink),
+                                     str(video_url), str(video_original), str(video_size),
+                                     hash_str]]
 
-                            print("Post logged to Pexels Log Spreadsheet")
+                                log_to_sheet(spreadsheet_values_to_send)
 
-                            break
+                                print("Post logged to Pexels Log Spreadsheet")
 
-                        # if the post did not meet our criteria then start again until we find one that does
-                        else:
-                            continue
+                                break
+
+                            # if the post did not meet our criteria then start again until we find one that does
+                            else:
+                                continue
     return spreadsheet_values_to_send
 
 
