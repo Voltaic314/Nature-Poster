@@ -81,10 +81,16 @@ def acceptable_extension(photo_extension):
 def string_replace(string):
     return string.replace("-", " ")
 
+def split_strings(string):
+    list_of_words_from_string = []
+    list_of_words_from_string = string.split()
+    return list_of_words_from_string
+
 def process_photos(photos):
     spreadsheet_values_to_send = []
     for photo in photos:
-        photo_name = string_replace(photo.description)
+        photo_description_word_check = split_strings(string_replace(photo.description))
+        photo_description = string_replace(photo.description)
         photo_user = photo.photographer
         photo_id = str(photo.id)
         photo_permalink = photo.url
@@ -105,7 +111,7 @@ def process_photos(photos):
                     # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
                     if photo_size < 4000:
 
-                        if no_badwords(photo_name):
+                        if no_badwords(photo_description_word_check):
 
                             # img_hash the image we just saved
                             image_hash, hash_str = write_image(photo_url)
@@ -123,7 +129,7 @@ def process_photos(photos):
                                     if no_badwords(image_text):
 
                                         spreadsheet_values_to_send = [
-                                            [str(photo_name), str(photo_user), str(photo_id), str(photo_permalink),
+                                            [str(photo_description), str(photo_user), str(photo_id), str(photo_permalink),
                                              str(photo_url), str(photo_original), str(photo_size),
                                              hash_str]]
 
