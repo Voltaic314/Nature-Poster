@@ -89,7 +89,7 @@ def split_strings(string):
 def process_photos(photos):
     spreadsheet_values_to_send = []
     for photo in photos:
-        photo_description_word_check = split_strings(string_replace(photo.description))
+        photo_description_word_check = split_strings(string_replace(photo.description.lower()))
         photo_description = string_replace(photo.description)
         photo_user = photo.photographer
         photo_id = str(photo.id)
