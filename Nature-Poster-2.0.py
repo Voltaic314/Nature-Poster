@@ -157,7 +157,7 @@ def process_photos(photos):
 
                                     # edit caption of existing fb post we just made
                                     fb.put_object(parent_object=fb_page_id + '_' + post_id, connection_name='',
-                                                  message="Description: " + '"' + photo_description + "\n\nPexels image link: " + photo_permalink + "\n\nP.S. This Facebook post was created by a bot. To learn more about how it works, check out the Github page here: https://github.com/Voltaic314/Nature-Poster")
+                                                  message="Description: " + '"' + photo_description + '"' + "\n\nPexels image link: " + photo_permalink + "\n\nP.S. This Facebook post was created by a bot. To learn more about how it works, check out the GitHub page here: https://github.com/Voltaic314/Nature-Poster")
 
                                     print("Caption has been edited to post successfully.")
 
