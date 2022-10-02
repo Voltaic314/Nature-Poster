@@ -127,7 +127,7 @@ def process_photos(photos):
                             if no_badwords(image_text):
 
                                 msg = photo_url
-                                post_url = 'https://graph.facebook.com/{}/videos'.format(fb_page_id)
+                                post_url = 'https://graph.facebook.com/{}/photos'.format(fb_page_id)
                                 payload = {
                                     "url": msg,
                                     "access_token": config.config_stuff['FB_Access_Token']
