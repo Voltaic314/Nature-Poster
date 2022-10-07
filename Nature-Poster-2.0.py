@@ -333,7 +333,7 @@ def process_photos(photos):
 
                             if no_badwords_in_img:
 
-                                post_to_fb_request = str(post_to_fb(photo_url))
+                                post_to_fb_request = post_to_fb(photo_url)
                                 post_id = get_post_id_from_json(post_to_fb_request)
 
                                 if fb_page_id in str(post_to_fb_request):
