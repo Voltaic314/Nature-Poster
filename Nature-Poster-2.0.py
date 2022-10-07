@@ -245,7 +245,7 @@ def post_to_fb(photo_url):
     }
 
     post_to_fb_request = requests.post(post_url, data=payload)
-    return post_to_fb_request
+    return post_to_fb_request.text
 
 
 def get_post_id_from_json(request):
@@ -258,7 +258,7 @@ def get_post_id_from_json(request):
     :returns: post id integer
     """
 
-    return_text_dict = json.loads(request.text)
+    return_text_dict = json.loads(request)
     id_from_json = return_text_dict.get('id')
     return id_from_json
 
@@ -294,9 +294,11 @@ def process_photos(photos):
     :param photos: list of photos to iterate through, retrieved from
     the next function below.
 
-    :returns: None
+    :returns: Spreadsheet values to send, this will evaluate to True and allow
+    the code to stop running once the post has been logged to the spreadsheet.
     """
 
+    spreadsheet_values_to_send = []
     fb_page_id = "101111365975816"
 
     for photo in photos:
@@ -336,9 +338,11 @@ def process_photos(photos):
                                 post_to_fb_request = post_to_fb(photo_url)
                                 post_id = get_post_id_from_json(post_to_fb_request)
 
-                                if fb_page_id in str(post_to_fb_request):
+                                if fb_page_id in post_to_fb_request:
 
                                     dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
+
+                                    edit_fb_post_caption(post_id, photo_description, photo_permalink)
 
                                     spreadsheet_values_to_send = [
                                         [dt_string, str(post_to_fb_request), str(photo_description), str(photo_user),
@@ -350,14 +354,12 @@ def process_photos(photos):
 
                                     print("Logged to FB Poster Spreadsheet")
 
-                                    edit_fb_post_caption(post_id, photo_description, photo_permalink)
-
                                     break
 
                                 # if the post did not meet our criteria then start again until we find one that does
                                 else:
                                     continue
-
+    return spreadsheet_values_to_send
 
 def get_photo():
     """
