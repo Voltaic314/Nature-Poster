@@ -219,7 +219,7 @@ def process_image_words(image_text):
     word_list = image_text().split()
 
     for word in word_list:
-        lower_word = word.lower()
+        word.lower()
 
     new_string = word_list.join()
 
@@ -329,7 +329,7 @@ def process_photos(photos):
 
                         if check_hash_fb:
 
-                            no_badwords_in_img = process_image_words(ocr_text())
+                            no_badwords_in_img = no_badwords(ocr_text())
 
                             if no_badwords_in_img:
 
