@@ -216,9 +216,8 @@ def process_image_words(image_text):
 
     :returns: new_string - which is the image_text string but every word is lower case
     """
-
-    word_list = image_text.split()
-    for word in word_list:
+    word_list = []
+    for word in image_text:
         lower_word = word.lower()
         new_word_list = word_list.append(lower_word)
         new_string = new_word_list.join()
