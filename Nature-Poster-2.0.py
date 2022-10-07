@@ -3,7 +3,7 @@ Author: Logan Maupin
 Date: 10/07/2022
 
 Description:
-This function's purpose is to call Pexel's API, grab a list of photos
+This function's purpose is to call Pexels' API, grab a list of photos
 given specific search keywords, then iterate through that list to
 see if it matches specific criteria for posting. Once we find
 one that we can use, we will post it to FB, edit a caption to the post
