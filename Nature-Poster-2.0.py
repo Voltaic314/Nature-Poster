@@ -12,7 +12,6 @@ sheets spreadsheet so that we don't post it again.
 
 Some features of this script include: list comprehension, image hashing,
 optical character recognition, three different APIs, json parsing, and more.
-
 """
 
 import config  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
