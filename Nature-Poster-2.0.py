@@ -59,7 +59,7 @@ def write_image(url):
     then hashes that image, and returns the hash as a string + hex dtype.
 
     :param url: url to get the image from. This must be the exact image url.
-    So therefore it must end in ".jpg", or something similar, at the end of the url.
+    Therefore, it must end in ".jpg", or something similar, at the end of the url.
 
     :returns: img_hash hex dtype variable + img_hash as a string variable
     """
@@ -85,7 +85,7 @@ def ocr_text():
 
     os.remove("image.jpg")
 
-    ocr_text_list = [word.replace('\n', '') for word in ocr_result.split(' ')]
+    ocr_text_list = [word.replace('\n', '').lower() for word in ocr_result.split(' ')]
 
     return ocr_text_list
 
@@ -116,6 +116,7 @@ def sheets_variables():
 
     :returns: sheets_service variable so that we can use the sheets API.
     """
+
     SERVICE_ACCOUNT_FILE = '/home/pi/Documents/Programming-Projects/Art-Bot/keys.json'  # points to the keys json file that holds the dictionary of the info we need.
     SCOPES = [
         'https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
@@ -130,6 +131,8 @@ def format_sheets_variable(sheet_name_and_range):
     """
     This function is used so that I don't have to keep repeating 3-4 variables
     all with the same format other than the name / range string.
+
+    TODO: Create class object with these attributes instead perhaps
 
     :param sheet_name_and_range: This is a sheet name, followed by
     an exclamation point, then a cell range.
@@ -178,53 +181,6 @@ def acceptable_extension(photo_extension):
     return any(extensions in photo_extension for extensions in extensions)
 
 
-def string_replace(string):
-    """
-    This function takes any string with hyphens and removes them.
-    This is primarily used because pexels likes to store all their
-    photo alt text with hyphens between each word instead of spaces.
-
-    :param string: Any string you want to use
-
-    :returns: that same string but without hyphens.
-    """
-
-    return string.replace("-", " ")
-
-
-def split_strings(string):
-    """
-    This function takes a string and splits it using the python split function.
-
-    :param string: Any string you want to use
-
-    :returns: list of those words in the string.
-    """
-
-    list_of_words_from_string = string.split()
-    return list_of_words_from_string
-
-
-def process_image_words(image_text):
-    """
-    This function takes a string and splits it up into a list of strings,
-    then for each word in the new list, converts it all to lower case.
-    Then joins the list back into a new string.
-
-    :param image_text: any string you want, preferably more than one word (lol)
-
-    :returns: new_string - which is the image_text string but every word is lower case
-    """
-    word_list = image_text().split()
-
-    for word in word_list:
-        word.lower()
-
-    new_string = word_list.join()
-
-    return new_string
-
-
 def post_to_fb(photo_url):
     """
     This function posts to fb given a specific photo_url that
@@ -237,7 +193,7 @@ def post_to_fb(photo_url):
 
     fb_page_id = "101111365975816"
     msg = photo_url
-    post_url = 'https://graph.facebook.com/{}/photos'.format(fb_page_id)
+    post_url = f'https://graph.facebook.com/{fb_page_id}/photos'
     payload = {
         "url": msg,
         "access_token": config.config_stuff['FB_Access_Token']
@@ -254,7 +210,7 @@ def get_post_id_from_json(request):
 
     :param request: json response object from FB
 
-    :returns: post id integer
+    :returns: post id string
     """
 
     return_text_dict = json.loads(request)
@@ -274,14 +230,17 @@ def edit_fb_post_caption(post_id, photo_description, photo_permalink):
     """
 
     fb_page_id = "101111365975816"
+    GitHub_Link = 'https://github.com/Voltaic314/Nature-Poster'
     # define fb variable for next line with our access info
     fb = facebook.GraphAPI(access_token=config.config_stuff['FB_Access_Token'])
 
     # edit caption of existing fb post we just made
-    fb.put_object(parent_object=fb_page_id + '_' + post_id, connection_name='',
-                  message="Description: " + '"' + photo_description + '"' + "\n\nPexels image link: " + photo_permalink + "\n\nP.S. This Facebook post was created by a bot. To learn more about how it works, check out the GitHub page here: https://github.com/Voltaic314/Nature-Poster")
+    fb.put_object(parent_object=f'{fb_page_id}_{post_id}', connection_name='',
+                  message=f'Description: {photo_description}\n\nPexels image link: {photo_permalink}\n\n'
+                          f'P.S. This Facebook post was created by a bot. To learn more about how it works,'
+                          f' check out the GitHub page here: {GitHub_Link}')
 
-    return print("Caption has been edited to post successfully.")
+    print("Caption has been edited to post successfully.")
 
 
 def process_photos(photos):
@@ -302,8 +261,8 @@ def process_photos(photos):
 
     for photo in photos:
 
-        photo_description_word_check = split_strings(string_replace(photo.description.lower()))
-        photo_description = string_replace(photo.description)
+        photo_description_word_check = photo.description.lower().split("-")
+        photo_description = photo.description.replace("-", " ")
         photo_user = photo.photographer
         photo_id = str(photo.id)
         photo_permalink = photo.url
@@ -359,6 +318,7 @@ def process_photos(photos):
                                 else:
                                     continue
     return spreadsheet_values_to_send
+
 
 def get_photo():
     """
