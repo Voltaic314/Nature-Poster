@@ -202,7 +202,7 @@ def image_hash_is_in_db(table, hash_string):
 
     hash_from_db = cursor.fetchall()
 
-    if hash_from_db:
+    if not hash_from_db:
         return True
 
     else:
@@ -222,7 +222,7 @@ def id_is_in_db(table, id_string):
 
     IDs_from_db = cursor.fetchall()
 
-    if IDs_from_db:
+    if not IDs_from_db:
 
         return True
 
@@ -287,7 +287,7 @@ def process_photos(photos):
             if check_id:
 
                 # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
-                if photo_size < 4000 and no_badwords(photo_description_word_check):
+                if photo_size < 4000:
 
                     if no_badwords(photo_description_word_check):
 
@@ -305,9 +305,13 @@ def process_photos(photos):
 
                                 if fb_page_id in post_to_fb_request:
 
+                                    print("Photo was posted to FB")
+
                                     dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
 
                                     edit_fb_post_caption(post_id, photo_description, photo_permalink)
+
+                                    print("Caption has been edited successfully.")
 
                                     data_to_log = (
                                         dt_string, str(post_to_fb_request), str(photo_description), str(photo_user),
