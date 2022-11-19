@@ -200,7 +200,7 @@ def image_hash_is_in_db(table, hash_string):
 
     cursor.execute(f'SELECT Image_Hash FROM {table} WHERE Image_Hash="{hash_string}"')
 
-    hash_from_db = cursor.fetchall()[0][0]
+    hash_from_db = cursor.fetchall()
 
     if hash_from_db:
         return True
@@ -220,9 +220,10 @@ def id_is_in_db(table, id_string):
 
     cursor.execute(f'SELECT ID FROM {table} WHERE ID="{id_string}"')
 
-    ID_from_db = cursor.fetchall()[0][0]
+    IDs_from_db = cursor.fetchall()
 
-    if ID_from_db:
+    if IDs_from_db:
+
         return True
 
     else:
