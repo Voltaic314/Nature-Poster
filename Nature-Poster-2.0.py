@@ -41,7 +41,7 @@ def flatten(nested_list):
     return [item for items in nested_list for item in items]
 
 
-def no_badwords(sentence):
+def no_badwords(sentence: list[str]):
     """
     Returns True if there is no bad-word
     False otherwise
@@ -51,6 +51,9 @@ def no_badwords(sentence):
     cursor.execute('SELECT * FROM Bad_Words')
     Bad_Words_from_DB = cursor.fetchall()
     Bad_Words_List = [item for word in Bad_Words_from_DB for item in word]
+
+    for word in sentence:
+        word.lower()
 
     return not any(word in sentence for word in Bad_Words_List)
 
@@ -84,7 +87,6 @@ def ocr_text():
     img = cv2.imread('image.jpg')
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     ocr_result = pytesseract.image_to_string(img)
-
     os.remove("image.jpg")
 
     ocr_text_list = [word.replace('\n', '').lower() for word in ocr_result.split(' ')]
