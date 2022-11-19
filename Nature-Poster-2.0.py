@@ -27,6 +27,7 @@ from datetime import datetime  # used for date and time in the FB log posting, s
 import facebook  # to add captions and comments to existing posts.
 import json  # to decipher the dictionary we get back in return from FB servers. (Mainly this is used to edit captions to the posts).
 import sqlite3  # our database access, where all the posts get logged to, a local DB file on the Raspberry Pi.
+import re # used for getting rid of special characters in the OCR text.
 
 
 def flatten(nested_list):
@@ -86,10 +87,11 @@ def ocr_text():
     pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
     img = cv2.imread('image.jpg')
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    ocr_result = pytesseract.image_to_string(img)
+    ocr_result = pytesseract.image_to_string(img).lower().replace("\n", "")
+    ocr_result = re.sub('[^a-zA-Z0-9]', '', ocr_result)
     os.remove("image.jpg")
 
-    ocr_text_list = [word.replace('\n', '').lower() for word in ocr_result.split(' ')]
+    ocr_text_list = [word for word in ocr_result]
 
     return ocr_text_list
 
