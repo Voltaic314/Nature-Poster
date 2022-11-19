@@ -315,6 +315,8 @@ def process_photos(photos):
                                     )
 
                                     log_to_DB(data_to_log)
+                                    connect.commit()
+                                    connect.close()
 
                                     break
 
