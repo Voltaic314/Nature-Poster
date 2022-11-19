@@ -342,7 +342,9 @@ def main():
     """
 
     global done, connect, cursor
-    connect = sqlite3.connect('Nature_Bot_Data.db')
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(BASE_DIR, "Nature_Bot_Data.db")
+    connect = sqlite3.connect(db_path)
     cursor = connect.cursor()
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
