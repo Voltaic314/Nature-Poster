@@ -294,7 +294,7 @@ def process_photos(photos):
                         # img_hash the image we just saved
                         image_hash, hash_str = write_image(photo_url)
 
-                        if image_hash_is_in_db('Nature_Bot_Data.db', hash_str):
+                        if image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
 
                             no_badwords_in_img = no_badwords(ocr_text())
 
