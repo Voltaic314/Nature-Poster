@@ -316,6 +316,9 @@ def process_photos(photos):
                                     )
 
                                     log_to_DB(data_to_log)
+
+                                    print("Data has been logged to the database. All done!")
+
                                     connect.commit()
                                     connect.close()
 
