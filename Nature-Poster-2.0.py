@@ -17,17 +17,16 @@ optical character recognition, three different APIs, json parsing, and more.
 import config  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
 import requests  # needed to get image file size before we download images (to make sure we don't download images too large that we can't upload elsewhere).
 import os  # needed to get the file paths
-import random  # needed to pick a random subreddit to grab data from. In theory, you don't have to pick a random one, you could do all at once or just one, either or.
-from googleapiclient.discovery import build  # python.exe -m pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
-from google.oauth2 import service_account  # this and the above package are for the spreadsheet usage -- the pip command is a pain, so I pasted it above.
+import random  # Used to pick a random keyword to search when grabbing a photo
 from PIL import Image  # for image hashing
 import imagehash  # also, for image hashing
 import pytesseract  # used for optical character recognition within images, basically pulling text out of images, so we can analyze it
 import cv2  # used for parsing data and converting images before putting into tesseract OCR
 from pexels_api import API  # need this to get images to use from Pexels (our source of images for the project)
-from datetime import datetime  # used for date and time in the FB log posting so we know when things were posted to FB
+from datetime import datetime  # used for date and time in the FB log posting, so we know when things were posted to FB
 import facebook  # to add captions and comments to existing posts.
 import json  # to decipher the dictionary we get back in return from FB servers. (Mainly this is used to edit captions to the posts).
+import sqlite3  # our database access, where all the posts get logged to, a local DB file on the Raspberry Pi.
 
 
 def flatten(nested_list):
@@ -49,8 +48,11 @@ def no_badwords(sentence):
 
     :param sentence: This is any string you wish to check for bad words in.
     """
+    cursor.execute('SELECT * FROM Bad_Words')
+    Bad_Words_from_DB = cursor.fetchall()
+    Bad_Words_List = [item for word in Bad_Words_from_DB for item in word]
 
-    return not any(word in sentence for word in flatlist_bw)
+    return not any(word in sentence for word in Bad_Words_List)
 
 
 def write_image(url):
@@ -107,62 +109,6 @@ def get_file_size(url):
     length = float(requests_content_length.headers.get('content-length')) / 1000
 
     return length
-
-
-def sheets_variables():
-    """
-    This function builds the Google sheets services and points to where
-    our keys.json file is to gain access to the sheet via the API keys.
-
-    :returns: sheets_service variable so that we can use the sheets API.
-    """
-
-    SERVICE_ACCOUNT_FILE = '/home/pi/Documents/Programming-Projects/Art-Bot/keys.json'  # points to the keys json file that holds the dictionary of the info we need.
-    SCOPES = [
-        'https://www.googleapis.com/auth/spreadsheets']  # website to send the oauth info to gain access to our data
-    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE,
-                                                                  scopes=SCOPES)  # writes the creds value with the value from the keys json file above
-    sheets_service = build('sheets', 'v4',
-                           credentials=creds)  # builds a package with all the above info and version we need and the right service we need
-    return sheets_service
-
-
-def format_sheets_variable(sheet_name_and_range):
-    """
-    This function is used so that I don't have to keep repeating 3-4 variables
-    all with the same format other than the name / range string.
-
-    TODO: Create class object with these attributes instead perhaps
-
-    :param sheet_name_and_range: This is a sheet name, followed by
-    an exclamation point, then a cell range.
-    Example: "Sheet1!A1:D4"
-
-    :returns: Sheet values variable which represents all the data in that sheet from the range
-    we specified above in the argument when running the function.
-    Note that this will be a 2d list. each row will be a list, and it wil lbe a list of those lists.
-    """
-
-    sheet_result = sheet.values().get(spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-                                      range=sheet_name_and_range).execute()
-    sheet_values = sheet_result.get('values', [])
-    return sheet_values
-
-
-def log_to_sheet(two_d_list_to_send):
-    """
-    This function takes a 2d list and appends the spreadsheet
-    database with the info you want to add to it.
-
-    :param two_d_list_to_send: This is the 2d list you wish to send to the spreadsheet
-
-    :returns: None
-    """
-
-    sheet.values().append(
-        spreadsheetId=config.config_stuff4['SAMPLE_SPREADSHEET_ID'],
-        range="FB-Poster-PE-Log!A:J", valueInputOption="RAW",
-        body={"values": two_d_list_to_send}).execute()
 
 
 def acceptable_extension(photo_extension):
@@ -243,6 +189,69 @@ def edit_fb_post_caption(post_id, photo_description, photo_permalink):
     print("Caption has been edited to post successfully.")
 
 
+def image_hash_is_in_db(table, hash_string):
+    """
+    The purpose of this function is to check if the image_hash we have is in our database or not.
+
+    :param table: Which DB table we want to look through to see if the hash is in there.
+    :param hash_string: Image Hash String (pretty self-explanatory)
+    :returns: True if the image hash is in the DB, else, false.
+    """
+
+    cursor.execute(f'SELECT Image_Hash FROM {table} WHERE Image_Hash="{hash_string}"')
+
+    hash_from_db = cursor.fetchall()[0][0]
+
+    if hash_from_db:
+        return True
+
+    else:
+        return False
+
+
+def id_is_in_db(table, id_string):
+    """
+    The purpose of this function is to check if the photo ID we have is in our database or not.
+
+    :param table: Which DB table we want to look through to see if the ID is in there.
+    :param id_string: The ID of the photo returned by Pexels API (the photo.id object value)
+    :returns: True if the photo ID is in the DB, else, false.
+    """
+
+    cursor.execute(f'SELECT ID FROM {table} WHERE ID="{id_string}"')
+
+    ID_from_db = cursor.fetchall()[0][0]
+
+    if ID_from_db:
+        return True
+
+    else:
+        return False
+
+
+def get_search_terms():
+    """
+    This function gets the search terms from the search terms table in the DB. It will return a list of search terms
+    that we can use for the keyword searches. In reality, we will pick a random one from this 1d array that it returns.
+
+    :returns: 1 dimensional list containing a list of strings that represent our search terms to be used later.
+    """
+
+    cursor.execute('Select * FROM Bad_Words')
+    Search_Terms_from_DB = cursor.fetchall()
+
+    return [item for word in Search_Terms_from_DB for item in word]
+
+
+def log_to_DB(formatted_tuple: tuple):
+    """
+    The purpose of this function is to log our grabbed info from the get_photo function over to the database
+    :param formatted_tuple: tuple containing the info that the user wishes to log to the database
+    :returns: None
+    """
+    cursor.execute('INSERT INTO Nature_Bot_Logged_FB_Posts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', formatted_tuple)
+
+
 def process_photos(photos):
     """
     This is the function that primarily makes decisions with the photos.
@@ -255,8 +264,7 @@ def process_photos(photos):
     :returns: Spreadsheet values to send, this will evaluate to True and allow
     the code to stop running once the post has been logged to the spreadsheet.
     """
-
-    spreadsheet_values_to_send = []
+    data_to_log = []
     fb_page_id = "101111365975816"
 
     for photo in photos:
@@ -273,9 +281,9 @@ def process_photos(photos):
 
         if acceptable_extension(photo_extension):
 
-            check_id_fb = bool(photo_id not in flatlist_fb)
+            check_id = id_is_in_db('Nature_Bot_Logged_FB_Posts', str(photo.id))
 
-            if check_id_fb:
+            if check_id:
 
                 # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
                 if photo_size < 4000 and no_badwords(photo_description_word_check):
@@ -285,9 +293,7 @@ def process_photos(photos):
                         # img_hash the image we just saved
                         image_hash, hash_str = write_image(photo_url)
 
-                        check_hash_fb = hash_str not in flatlist_fb
-
-                        if check_hash_fb:
+                        if image_hash_is_in_db('Nature_Bot_Data.db', hash_str):
 
                             no_badwords_in_img = no_badwords(ocr_text())
 
@@ -302,25 +308,23 @@ def process_photos(photos):
 
                                     edit_fb_post_caption(post_id, photo_description, photo_permalink)
 
-                                    spreadsheet_values_to_send = [
-                                        [dt_string, str(post_to_fb_request), str(photo_description), str(photo_user),
-                                         str(photo_id),
-                                         str(photo_permalink),
-                                         str(photo_url), str(photo_original), str(photo_size),
-                                         hash_str]]
-                                    log_to_sheet(spreadsheet_values_to_send)
+                                    data_to_log = (
+                                        dt_string, str(post_to_fb_request), str(photo_description), str(photo_user),
+                                        str(photo_id), str(photo_permalink), str(photo_url), str(photo_original),
+                                        float(photo_size), hash_str
+                                    )
 
-                                    print("Logged to FB Poster Spreadsheet")
+                                    log_to_DB(data_to_log)
 
                                     break
 
                                 # if the post did not meet our criteria then start again until we find one that does
                                 else:
                                     continue
-    return spreadsheet_values_to_send
+    return data_to_log
 
 
-def get_photo():
+def main():
     """
     This function does the actual searching of the photos.
     This function calls Pexels' API and pulls a list of photos
@@ -331,12 +335,13 @@ def get_photo():
     :returns: None
     """
 
-    global service, done
+    global done, connect, cursor
+    connect = sqlite3.connect('Nature_Bot_Data.db')
+    cursor = connect.cursor()
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
-    values_ps = format_sheets_variable("Pexels-Sources!A:A")
-    flatlist_ps = flatten(values_ps)  # list of art sources to use from Pexels
-    api.search(str(random.choice(flatlist_ps)), page=1, results_per_page=15)
+    Search_Terms = get_search_terms()  # list of art sources to use from Pexels
+    api.search(str(random.choice(Search_Terms)), page=1, results_per_page=15)
 
     done = False
     while not done:
@@ -346,10 +351,4 @@ def get_photo():
 
 
 if __name__ == "__main__":
-    sheet = sheets_variables().spreadsheets()
-    values_fb = format_sheets_variable("FB-Poster-PE-Log!A:J")
-    values_bw = format_sheets_variable("Bad-Topics-NSFW!A:A")
-    flatlist_fb = flatten(values_fb)  # FB Log Sheet
-    flatlist_bw = flatten(values_bw)  # list of bad words to avoid
-
-    get_photo()
+    main()
