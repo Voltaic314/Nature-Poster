@@ -26,17 +26,7 @@ from datetime import datetime  # used for date and time in the FB log posting, s
 import facebook  # to add captions and comments to existing posts.
 import json  # to decipher the dictionary we get back in return from FB servers. (Mainly this is used to edit captions to the posts).
 import sqlite3  # our database access, where all the posts get logged to, a local DB file on the Raspberry Pi.
-import re # used for getting rid of special characters in the OCR text.
-
-
-def flatten(nested_list):
-    """
-    Flattens a nested list.
-    :param nested_list: This is a 2d list that you wish to flatten into one list
-    :returns: 1d list. i.e. ["1", "2"]
-    """
-
-    return [item for items in nested_list for item in items]
+import re  # used for getting rid of special characters in the OCR text.
 
 
 def no_badwords(sentence: list[str]):
@@ -70,7 +60,7 @@ def write_image(url):
     return img_hash, str(img_hash)
 
 
-def ocr_text():
+def ocr_text(filename):
     """
     This function runs OCR on the given image file below, then returns
     its text as a list of strings.
@@ -78,11 +68,11 @@ def ocr_text():
     """
 
     pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
-    img = cv2.imread('image.jpg')
+    img = cv2.imread(filename)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     ocr_result = pytesseract.image_to_string(img).lower().replace("\n", "")
     ocr_result = re.sub('[^a-zA-Z0-9]', '', ocr_result)
-    os.remove("image.jpg")
+    os.remove(filename)
 
     ocr_text_list = [word for word in ocr_result]
 
@@ -248,7 +238,6 @@ def process_photos(photos):
     the code to stop running once the post has been logged to the spreadsheet.
     """
     data_to_log = []
-    fb_page_id = "101111365975816"
 
     for photo in photos:
 
@@ -283,7 +272,7 @@ def process_photos(photos):
         if not image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
             continue
 
-        no_badwords_in_img = no_badwords(ocr_text())
+        no_badwords_in_img = no_badwords(ocr_text("image.jpg"))
 
         if not no_badwords_in_img:
             continue
