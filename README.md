@@ -16,3 +16,26 @@ This script also uses OCR and Image Hashing as well. The OCR is used to detect b
 Thanks for reading. If you have questions feel free to reach out to me and if you have any suggestions on how to improve the code, feel free to make those suggestions to me! 
 
 You can visit my FB page for this project at https://www.facebook.com/AutomaticNaturePosts/
+
+
+-----------------------
+1 big issue with this code and 2 minor things:
+
+TODO: (see below issues)
+
+1. it will always look through the same photos and check them over and over until new photos are uploaded
+to replace the old ones, so this code may not be the most efficient. i.e. if there is a list of 5 photos,
+and the first 4 don't meet the criteria, then it posts the last one... then another photo is uploaded to that list
+on pexels, then now it will check the first 4 photos (again), plus the fifth one it posted before, and
+now the new one and maybe post it. I could solve this problem by keeping a DB of checked post ID's, but
+seems too storage intensive, might save a lot of resources elsewhere though.
+
+2. The other thing is that if it has a good photo and tries to post it but FB is down, it will just discard that
+photo altogether instead of trying to save it for a rainy day. There is a way to fix this but eh. I want it
+to be completely automated so I'm not gonna bother.
+
+3. We don't have a way to check if the photo was deleted or not after it was posted. This is important to know
+if you're going to train a ML model on these photos. As ones that were deleted obviously didn't fit the
+nature photo theme. Which could throw off your data. I can add a column for that in the DB tables, but,
+I'm not sure how I would check each post to see if it got deleted or not. Not without pinging FB API like
+10,000 times a day. Maybe if any of you have a better solution, let me know.
