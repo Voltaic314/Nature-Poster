@@ -9,7 +9,6 @@ see if it matches specific criteria for posting. Once we find
 one that we can use, we will post it to FB, edit a caption to the post
 that we just made, then log the details of what we posted to a Google
 sheets spreadsheet so that we don't post it again.
-
 Some features of this script include: list comprehension, image hashing,
 optical character recognition, three different APIs, json parsing, and more.
 """
@@ -33,9 +32,7 @@ import re # used for getting rid of special characters in the OCR text.
 def flatten(nested_list):
     """
     Flattens a nested list.
-
     :param nested_list: This is a 2d list that you wish to flatten into one list
-
     :returns: 1d list. i.e. ["1", "2"]
     """
 
@@ -46,7 +43,6 @@ def no_badwords(sentence: list[str]):
     """
     Returns True if there is no bad-word
     False otherwise
-
     :param sentence: This is any string you wish to check for bad words in.
     """
     cursor.execute('SELECT * FROM Bad_Words')
@@ -63,10 +59,8 @@ def write_image(url):
     """
     This function downloads an image from the given url argument,
     then hashes that image, and returns the hash as a string + hex dtype.
-
     :param url: url to get the image from. This must be the exact image url.
     Therefore, it must end in ".jpg", or something similar, at the end of the url.
-
     :returns: img_hash hex dtype variable + img_hash as a string variable
     """
 
@@ -80,7 +74,6 @@ def ocr_text():
     """
     This function runs OCR on the given image file below, then returns
     its text as a list of strings.
-
     :returns: ocr_text_list - which is a list of strings from words in the image
     """
 
@@ -100,9 +93,7 @@ def get_file_size(url):
     """
     Gets image from a link and returns its content
     and size.
-
     :param url: This is any url of an image that you wish to get the file size of.
-
     :returns: File size of an image as a floating point number.
     """
 
@@ -120,9 +111,7 @@ def acceptable_extension(photo_extension):
     This function defines the list of acceptable photo extensions
     we can use. It also tells us whether the one we want to use is
     in the acceptable list of extensions.
-
     :param photo_extension: The end of an image url of an image hosted online.
-
     :returns: True / False of whether the photo extension matches an
     acceptable format.
     """
@@ -135,9 +124,7 @@ def post_to_fb(photo_url):
     """
     This function posts to fb given a specific photo_url that
     you wish to use.
-
     :param photo_url: any url of an image, must end in .jpg or something similar.
-
     :returns: response from FB servers with the post id or an error
     """
 
@@ -157,9 +144,7 @@ def get_post_id_from_json(request):
     """
     This function takes the response from FB servers and parses out
     the post ID from it.
-
     :param request: json response object from FB
-
     :returns: post id string
     """
 
@@ -171,11 +156,9 @@ def get_post_id_from_json(request):
 def edit_fb_post_caption(post_id, photo_description, photo_permalink):
     """
     This function takes a given FB post and edits a caption to it.
-
     :param post_id: any FB post you wish to edit.
     :param photo_description: what you wish to edit to it, preferably a str type
     :param photo_permalink: the link of the original pexels photo for credit
-
     :returns: None
     """
 
@@ -196,7 +179,6 @@ def edit_fb_post_caption(post_id, photo_description, photo_permalink):
 def image_hash_is_in_db(table, hash_string):
     """
     The purpose of this function is to check if the image_hash we have is in our database or not.
-
     :param table: Which DB table we want to look through to see if the hash is in there.
     :param hash_string: Image Hash String (pretty self-explanatory)
     :returns: True if the image hash is in the DB, else, false.
@@ -216,7 +198,6 @@ def image_hash_is_in_db(table, hash_string):
 def id_is_in_db(table, id_string):
     """
     The purpose of this function is to check if the photo ID we have is in our database or not.
-
     :param table: Which DB table we want to look through to see if the ID is in there.
     :param id_string: The ID of the photo returned by Pexels API (the photo.id object value)
     :returns: True if the photo ID is in the DB, else, false.
@@ -238,7 +219,6 @@ def get_search_terms():
     """
     This function gets the search terms from the search terms table in the DB. It will return a list of search terms
     that we can use for the keyword searches. In reality, we will pick a random one from this 1d array that it returns.
-
     :returns: 1 dimensional list containing a list of strings that represent our search terms to be used later.
     """
 
@@ -262,10 +242,8 @@ def process_photos(photos):
     This is the function that primarily makes decisions with the photos.
     It goes through a series of if statements to figure out if the photo
     is worth posting to FB or not based on a given criteria below.
-
     :param photos: list of photos to iterate through, retrieved from
     the next function below.
-
     :returns: Spreadsheet values to send, this will evaluate to True and allow
     the code to stop running once the post has been logged to the spreadsheet.
     """
@@ -284,57 +262,64 @@ def process_photos(photos):
         photo_original = photo.original
         photo_size = get_file_size(photo.large)
 
-        if acceptable_extension(photo_extension):
+        if not acceptable_extension(photo_extension):
+            continue
 
-            check_id = id_is_in_db('Nature_Bot_Logged_FB_Posts', str(photo.id))
+        check_id = id_is_in_db('Nature_Bot_Logged_FB_Posts', str(photo.id))
 
-            if check_id:
+        if not check_id:
+            continue
 
-                # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
-                if photo_size < 4000:
+        # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
+        if photo_size >= 4000:
+            continue
 
-                    if no_badwords(photo_description_word_check):
+        if not no_badwords(photo_description_word_check):
+            continue
 
-                        # img_hash the image we just saved
-                        image_hash, hash_str = write_image(photo_url)
+        # img_hash the image we just saved
+        image_hash, hash_str = write_image(photo_url)
 
-                        if image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
+        if not image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
+            continue
 
-                            no_badwords_in_img = no_badwords(ocr_text())
+        no_badwords_in_img = no_badwords(ocr_text())
 
-                            if no_badwords_in_img:
+        if not no_badwords_in_img:
+            continue
 
-                                post_to_fb_request = post_to_fb(photo_url)
-                                post_id = get_post_id_from_json(post_to_fb_request)
+        post_to_fb_request = post_to_fb(photo_url)
+        post_id = get_post_id_from_json(post_to_fb_request)
+        successful_post = post_id in post_to_fb_request
 
-                                if fb_page_id in post_to_fb_request:
+        if not successful_post:
+            continue
 
-                                    print("Photo was posted to FB")
+        else:
 
-                                    dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
+            print("Photo was posted to FB")
 
-                                    edit_fb_post_caption(post_id, photo_description, photo_permalink)
+            dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
 
-                                    print("Caption has been edited successfully.")
+            edit_fb_post_caption(post_id, photo_description, photo_permalink)
 
-                                    data_to_log = (
-                                        dt_string, str(post_to_fb_request), str(photo_description), str(photo_user),
-                                        str(photo_id), str(photo_permalink), str(photo_url), str(photo_original),
-                                        float(photo_size), hash_str
-                                    )
+            print("Caption has been edited successfully.")
 
-                                    log_to_DB(data_to_log)
+            data_to_log = (
+                dt_string, str(post_to_fb_request), str(photo_description), str(photo_user),
+                str(photo_id), str(photo_permalink), str(photo_url), str(photo_original),
+                float(photo_size), hash_str
+            )
 
-                                    print("Data has been logged to the database. All done!")
+            log_to_DB(data_to_log)
 
-                                    connect.commit()
-                                    connect.close()
+            print("Data has been logged to the database. All done!")
 
-                                    break
+            connect.commit()
+            connect.close()
 
-                                # if the post did not meet our criteria then start again until we find one that does
-                                else:
-                                    continue
+            break
+
     return data_to_log
 
 
@@ -345,7 +330,6 @@ def main():
     to search through. If none of the photos meet our criteria,
     then load the "next page" which is just another list of 15 photos
     to search through.
-
     :returns: None
     """
 
