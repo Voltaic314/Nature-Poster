@@ -8,19 +8,19 @@ Certain functions are left out of testing for now while I work on a way to figur
 
 import unittest
 from Nature_Poster import *
-import sqlite3
 
 
 class TestPalindrome(unittest.TestCase):
 
     def test_no_badwords(self):
 
-        with open('C://Users/logan/Documents/Programming/Python/bad_words.txt') as bad_words:
+        # some of my more SFW bad words
+        with open("bad_words.txt") as bad_words:
 
             for word in bad_words:
-                self.assertFalse([word])
-                self.assertFalse([word.upper()])
-                self.assertFalse([word.title()])
+                self.assertFalse([word.replace("\n", "")])
+                self.assertFalse([word.replace("\n", "").upper()])
+                self.assertFalse([word.replace("\n", "").title()])
 
             self.assertTrue(["This", "sentence", "contains", "no", "bad", "words"])
 
@@ -37,3 +37,6 @@ class TestPalindrome(unittest.TestCase):
         ideal_response = ["this", "image", "contains", "text", "and", "numbers" "and", "symbols"]
         self.assertEqual(ocr_text("test_image.jpg"), ideal_response)
         self.assertEqual(ocr_text("test_blank_image.jpg"), [])
+
+    def test_get_file_size(self):
+        pass
