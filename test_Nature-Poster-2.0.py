@@ -26,8 +26,11 @@ class TestPalindrome(unittest.TestCase):
 
     def test_write_image(self):
         ideal_hash = "949e9e70cc53ccc6"
-        test_photo_to_use = "test_photo_for_hashing.jpg"
-        self.assertEqual(write_image())
+        test_photo_file_name = "test_photo_for_hashing.jpg"
+        image_link = "https://raw.githubusercontent.com/Voltaic314/Nature-Poster/main/test_photo_for_hashing.jpg"
+        self.assertEqual(write_image(image_link, test_photo_file_name), ideal_hash)
+        self.assertIsNotNone(write_image(image_link, test_photo_file_name))
+        self.assertIsInstance(write_image(image_link, test_photo_file_name), str)
 
     def test_ocr_text(self):
 

@@ -45,7 +45,7 @@ def no_badwords(sentence: list[str]):
     return not any(word in sentence for word in Bad_Words_List)
 
 
-def write_image(url):
+def write_image(url, filename):
     """
     This function downloads an image from the given url argument,
     then hashes that image, and returns the hash as a string + hex dtype.
@@ -57,7 +57,7 @@ def write_image(url):
     with open('image.jpg', 'wb') as f:
         f.write(requests.get(url).content)
     img_hash = imagehash.dhash(Image.open("image.jpg"))
-    return img_hash, str(img_hash)
+    return str(img_hash)
 
 
 def ocr_text(filename):
@@ -267,7 +267,7 @@ def process_photos(photos):
             continue
 
         # img_hash the image we just saved
-        image_hash, hash_str = write_image(photo_url)
+        hash_str = write_image(photo_url)
 
         if not image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
             continue
