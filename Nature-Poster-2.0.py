@@ -242,7 +242,7 @@ def get_search_terms():
     :returns: 1 dimensional list containing a list of strings that represent our search terms to be used later.
     """
 
-    cursor.execute('Select * FROM Bad_Words')
+    cursor.execute('Select * FROM Photo_Search_Terms')
     Search_Terms_from_DB = cursor.fetchall()
 
     return [item for word in Search_Terms_from_DB for item in word]
