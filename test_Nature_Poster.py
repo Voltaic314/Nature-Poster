@@ -11,7 +11,7 @@ from unittest.mock import patch
 from Nature_Poster import *
 
 
-class TestPalindrome(unittest.TestCase):
+class TestNatureBot(unittest.TestCase):
 
     def test_no_badwords(self):
 
