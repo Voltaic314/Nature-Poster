@@ -54,9 +54,9 @@ def write_image(url, filename):
     :returns: img_hash hex dtype variable + img_hash as a string variable
     """
 
-    with open('image.jpg', 'wb') as f:
+    with open(filename, 'wb') as f:
         f.write(requests.get(url).content)
-    img_hash = imagehash.dhash(Image.open("image.jpg"))
+    img_hash = imagehash.dhash(Image.open(filename))
     return str(img_hash)
 
 
@@ -81,13 +81,13 @@ def ocr_text(filename):
 
 def get_file_size(url):
     """
-    Gets image from a link and returns its content
-    and size.
+    Gets file size of an image given the url for it.
+
     :param url: This is any url of an image that you wish to get the file size of.
     :returns: File size of an image as a floating point number.
     """
 
-    # defines R variable as grabbing data from our selected url
+    # grabbing data from our selected url
     requests_content_length = requests.get(url)
 
     # divides file size by 1000, so we can get how many kilobytes it is
