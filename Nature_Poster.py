@@ -31,9 +31,10 @@ import re  # used for getting rid of special characters in the OCR text.
 
 def no_badwords(sentence: list[str]):
     """
-    Returns True if there is no bad-word
-    False otherwise
-    :param sentence: This is any string you wish to check for bad words in.
+    This function checks a list of strings to see if there is a bad word in the given list of strings.
+
+    :param sentence: This is any list of strings you wish to check for bad words in.
+    :returns:  Returns True if there is no bad-word in the given sentence list of strings, false otherwise.
     """
     cursor.execute('SELECT * FROM Bad_Words')
     Bad_Words_from_DB = cursor.fetchall()
@@ -45,12 +46,14 @@ def no_badwords(sentence: list[str]):
     return not any(word in sentence for word in Bad_Words_List)
 
 
-def write_image(url, filename):
+def write_image(url: str, filename: str) -> str:
     """
     This function downloads an image from the given url argument,
-    then hashes that image, and returns the hash as a string + hex dtype.
+    then hashes that image, and returns the hash as a string of the hex value.
     :param url: url to get the image from. This must be the exact image url.
     Therefore, it must end in ".jpg", or something similar, at the end of the url.
+    :param filename: This represents what you will name the file that you are saving / writing to.
+
     :returns: img_hash hex dtype variable + img_hash as a string variable
     """
 
@@ -146,6 +149,7 @@ def get_post_id_from_json(request):
 def edit_fb_post_caption(post_id, photo_description, photo_permalink):
     """
     This function takes a given FB post and edits a caption to it.
+
     :param post_id: any FB post you wish to edit.
     :param photo_description: what you wish to edit to it, preferably a str type
     :param photo_permalink: the link of the original pexels photo for credit
@@ -154,6 +158,7 @@ def edit_fb_post_caption(post_id, photo_description, photo_permalink):
 
     fb_page_id = "101111365975816"
     GitHub_Link = 'https://github.com/Voltaic314/Nature-Poster'
+
     # define fb variable for next line with our access info
     fb = facebook.GraphAPI(access_token=config.config_stuff['FB_Access_Token'])
 
@@ -207,7 +212,7 @@ def id_is_in_db(table, id_string):
 
 def get_search_terms():
     """
-    This function gets the search terms from the search terms table in the DB. It will return a list of search terms
+    This function gets the search terms from the search terms table in the DB. It will return a list of search term
     that we can use for the keyword searches. In reality, we will pick a random one from this 1d array that it returns.
     :returns: 1 dimensional list containing a list of strings that represent our search terms to be used later.
     """
@@ -249,7 +254,7 @@ def process_photos(photos):
         photo_extension = photo.extension
         photo_url = photo.large
         photo_original = photo.original
-        photo_size = get_file_size(photo.large)
+        photo_file_size = get_file_size(photo.large)
 
         if not acceptable_extension(photo_extension):
             continue
@@ -260,16 +265,16 @@ def process_photos(photos):
             continue
 
         # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
-        if photo_size >= 4000:
+        if photo_file_size >= 4000:
             continue
 
         if not no_badwords(photo_description_word_check):
             continue
 
         # img_hash the image we just saved
-        hash_str = write_image(photo_url)
+        hash_str = write_image(photo_url, "image.jpg")
 
-        if not image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
+        if image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
             continue
 
         no_badwords_in_img = no_badwords(ocr_text("image.jpg"))
@@ -278,8 +283,8 @@ def process_photos(photos):
             continue
 
         post_to_fb_request = post_to_fb(photo_url)
-        post_id = get_post_id_from_json(post_to_fb_request)
-        successful_post = post_id in post_to_fb_request
+        fb_post_id = get_post_id_from_json(post_to_fb_request)
+        successful_post = fb_post_id in post_to_fb_request
 
         if not successful_post:
             continue
@@ -290,14 +295,14 @@ def process_photos(photos):
 
             dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
 
-            edit_fb_post_caption(post_id, photo_description, photo_permalink)
+            edit_fb_post_caption(fb_post_id, photo_description, photo_permalink)
 
             print("Caption has been edited successfully.")
 
             data_to_log = (
                 dt_string, str(post_to_fb_request), str(photo_description), str(photo_user),
                 str(photo_id), str(photo_permalink), str(photo_url), str(photo_original),
-                float(photo_size), hash_str
+                float(photo_file_size), hash_str
             )
 
             log_to_DB(data_to_log)
