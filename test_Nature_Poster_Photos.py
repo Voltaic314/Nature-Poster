@@ -8,7 +8,7 @@ Certain functions are left out of testing for now while I work on a way to figur
 
 import unittest
 from unittest.mock import patch
-from Nature_Poster import *
+from Nature_Poster_Photos import *
 
 
 class TestNatureBot(unittest.TestCase):
