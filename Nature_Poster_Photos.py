@@ -337,7 +337,7 @@ def main():
 
     done = False
     while not done:
-        done = process_photos(photos=api.get_entries())
+        done = process_photos(photos=api.get_photo_entries())
         if not done:
             api.search_next_page()
 
