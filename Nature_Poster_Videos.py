@@ -33,9 +33,6 @@ def no_badwords(sentence: list[str]):
     Bad_Words_from_DB = cursor.fetchall()
     Bad_Words_List = [item for word in Bad_Words_from_DB for item in word]
 
-    for word in sentence:
-        word.lower()
-
     return not any(word in sentence for word in Bad_Words_List)
 
 
@@ -85,12 +82,12 @@ def post_to_fb(video_link, video_description, video_permalink):
     fb_page_id = "101111365975816"
     post_url = f'https://graph.facebook.com/{fb_page_id}/videos'
     GitHub_Link = 'https://github.com/Voltaic314/Nature-Poster'
-    message = f'Description: {video_description.title()}\n\nPexels link: {video_permalink}\n\n' \
+    message = f'Description: {video_description}\n\nPexels link: {video_permalink}\n\n' \
               f'P.S. This Facebook post was created by a bot. To learn more about how it works,' \
               f' check out the GitHub page here: {GitHub_Link}'
     payload = {
         "file_url": video_link,
-        "title": video_description.title(),
+        "title": video_description,
         "description": message,
         "access_token": config.config_stuff['FB_Access_Token']
     }
@@ -198,13 +195,10 @@ def process_videos(videos):
 
         post_to_fb_request = post_to_fb(video_link, video.description, video_permalink)
         fb_post_id = get_post_id_from_json(post_to_fb_request)
-        # successful_post = fb_post_id in post_to_fb_request
 
         if not fb_post_id:
             print("Post was not successful")
             print(post_to_fb_request)
-            print(f"Your video link was: {video.link}")
-            print(f"The file size of this video was {video_file_size} MB.")
             data_to_log = "error raised"
             break
 

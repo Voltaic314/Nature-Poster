@@ -12,7 +12,6 @@ sheets spreadsheet so that we don't post it again.
 Some features of this script include: list comprehension, image hashing,
 optical character recognition, three different APIs, json parsing, and more.
 """
-
 import config  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
 import requests  # needed to get image file size before we download images (to make sure we don't download images too large that we can't upload elsewhere).
 import os  # needed to get the file paths
@@ -37,10 +36,10 @@ def no_badwords(sentence: list[str]):
     :returns:  Returns True if there is no bad-word in the given sentence list of strings, false otherwise.
     """
     cursor.execute('SELECT * FROM Bad_Words')
-    Bad_Words_from_DB = cursor.fetchall()
-    Bad_Words_List = [item for word in Bad_Words_from_DB for item in word]
+    Bad_Words_from_DB_Tuples = cursor.fetchall()
+    Bad_Words_List = [item for word in Bad_Words_from_DB_Tuples for item in word]
 
-    for word in sentence:
+    for word in Bad_Words_List:
         word.lower()
 
     return not any(word in sentence for word in Bad_Words_List)
@@ -168,8 +167,6 @@ def edit_fb_post_caption(post_id, photo_description, photo_permalink):
                           f'P.S. This Facebook post was created by a bot. To learn more about how it works,'
                           f' check out the GitHub page here: {GitHub_Link}')
 
-    print("Caption has been edited to post successfully.")
-
 
 def image_hash_is_in_db(table, hash_string):
     """
@@ -246,8 +243,8 @@ def process_photos(photos):
 
     for photo in photos:
 
-        photo_description_word_check = photo.description.lower().split("-")
         photo_description = photo.description.replace("-", " ")
+        photo_description_word_check = photo_description.lower().split(" ")
         photo_user = photo.photographer
         photo_id = str(photo.id)
         photo_permalink = photo.url
@@ -265,6 +262,8 @@ def process_photos(photos):
         # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
         if photo_file_size >= 4000:
             continue
+
+        print(photo_description_word_check)
 
         if not no_badwords(photo_description_word_check):
             continue
@@ -333,8 +332,8 @@ def main():
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
     Search_Terms = get_search_terms()  # list of art sources to use from Pexels
-    api.search_photo(str(random.choice(Search_Terms)), page=1, results_per_page=15)
-
+    searched_term = str(random.choice(Search_Terms))
+    api.search_photo(searched_term, page=1, results_per_page=15)
     done = False
     while not done:
         done = process_photos(photos=api.get_photo_entries())
