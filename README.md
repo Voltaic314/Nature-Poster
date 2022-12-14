@@ -26,7 +26,7 @@ TODO: (see below issues)
 1. it will always look through the same photos and check them over and over until new photos are uploaded
 to replace the old ones, so this code may not be the most efficient. i.e. if there is a list of 5 photos,
 and the first 4 don't meet the criteria, then it posts the last one... then another photo is uploaded to that list
-on pexels, then now it will check the first 4 photos (again), plus the fifth one it posted before, and
+on pexels, then now it will check the first 4 photos (again), skip the fifth one it posted before, and
 now the new one and maybe post it. I could solve this problem by keeping a DB of checked post ID's, but
 seems too storage intensive, might save a lot of resources elsewhere though.
 
