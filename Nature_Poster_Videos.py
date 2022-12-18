@@ -36,7 +36,7 @@ def no_badwords(sentence: list[str]):
     return not any(word in sentence for word in Bad_Words_List)
 
 
-def get_file_size(url):
+def get_file_size(url: str):
     """
     Gets file size of an image given the url for it.
 
@@ -55,7 +55,7 @@ def get_file_size(url):
         return None
 
 
-def acceptable_extension(video_extension):
+def acceptable_extension(video_extension: str):
     """
     This function defines the list of acceptable video extensions
     we can use. It also tells us whether the one we want to use is
@@ -69,7 +69,7 @@ def acceptable_extension(video_extension):
     return any(extensions in video_extension for extensions in extensions)
 
 
-def post_to_fb(video_link, video_description, video_permalink):
+def post_to_fb(video_link: str, video_description: str, video_permalink: str):
     """
     This function posts to fb given a specific video.url that you wish to use.
 
@@ -96,11 +96,11 @@ def post_to_fb(video_link, video_description, video_permalink):
     return post_to_fb_request.text
 
 
-def get_post_id_from_json(request):
+def get_post_id_from_json(request: str):
     """
     This function takes the response from FB servers and parses out
     the post ID from it.
-    :param request: json response object from FB
+    :param request: json response string object from FB
     :returns: post id string
     """
 
@@ -114,15 +114,15 @@ def get_post_id_from_json(request):
         return None
 
 
-def id_is_in_db(table, id_string):
+def id_is_in_db(table_name: str, id_string: str):
     """
     The purpose of this function is to check if the video ID we have is in our database or not.
-    :param table: Which DB table we want to look through to see if the ID is in there.
+    :param table_name: Which DB table we want to look through to see if the ID is in there.
     :param id_string: The ID of the video returned by Pexels API (the video.id object value)
     :returns: True if the video ID is in the DB, else, false.
     """
 
-    cursor.execute(f'SELECT ID FROM {table} WHERE ID="{id_string}"')
+    cursor.execute(f'SELECT ID FROM {table_name} WHERE ID="{id_string}"')
 
     IDs_from_db = cursor.fetchall()
 
@@ -135,7 +135,7 @@ def id_is_in_db(table, id_string):
 
 def get_search_terms():
     """
-    This function gets the search terms from the search terms table in the DB. It will return a list of search term
+    This function gets the search terms from the search terms table_name in the DB. It will return a list of search term
     that we can use for the keyword searches. In reality, we will pick a random one from this 1d array that it returns.
     :returns: 1 dimensional list containing a list of strings that represent our search terms to be used later.
     """
@@ -155,13 +155,14 @@ def log_to_DB(formatted_tuple: tuple):
     cursor.execute('INSERT INTO Nature_Bot_Logged_FB_Posts_Videos VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', formatted_tuple)
 
 
-def process_videos(videos):
+def process_videos(videos: list, attempted_posts: int):
     """
     This is the function that primarily makes decisions with the videos.
     It goes through a series of if statements to figure out if the video
     is worth posting to FB or not based on a given criteria below.
     :param videos: list of videos to iterate through, retrieved from
     the next function below.
+    :param attempted_posts: This is an integer which will represent the number of times it posted to FB or not.
     :returns: Spreadsheet values to send, this will evaluate to True and allow
     the code to stop running once the post has been logged to the spreadsheet.
     """
@@ -175,6 +176,13 @@ def process_videos(videos):
         video_extension = video.extension
         video_link = video.link
         video_file_size = get_file_size(video.link)
+
+        # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
+        # in this case, if the function returns True, because of the done = False thing in the next function, it will
+        # kill the loop. In this case this is like a failsafe to make sure the script doesn't run forever in the case of
+        # some issue with FB servers.
+        if attempted_posts >= 5:
+            return True
 
         if not acceptable_extension(video_extension):
             continue
@@ -198,9 +206,8 @@ def process_videos(videos):
 
         if not fb_post_id:
             print("Post was not successful")
-            print(post_to_fb_request)
-            data_to_log = "error raised"
-            break
+            attempted_posts += 1
+            continue
 
         else:
 
@@ -247,9 +254,10 @@ def main():
     searched_term = str(random.choice(Search_Terms))
     api.search_video(searched_term, page=1, results_per_page=15)
 
+    attempted_posts = 0
     done = False
     while not done:
-        done = process_videos(videos=api.get_video_entries())
+        done = process_videos(videos=api.get_video_entries(), attempted_posts=attempted_posts)
         if not done:
             api.search_next_page()
 

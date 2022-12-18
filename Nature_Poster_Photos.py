@@ -171,7 +171,7 @@ def edit_fb_post_caption(post_id, photo_description, photo_permalink):
 def image_hash_is_in_db(table, hash_string):
     """
     The purpose of this function is to check if the image_hash we have is in our database or not.
-    :param table: Which DB table we want to look through to see if the hash is in there.
+    :param table: Which DB table_name we want to look through to see if the hash is in there.
     :param hash_string: Image Hash String (pretty self-explanatory)
     :returns: True if the image hash is in the DB, else, false.
     """
@@ -190,7 +190,7 @@ def image_hash_is_in_db(table, hash_string):
 def id_is_in_db(table, id_string):
     """
     The purpose of this function is to check if the photo ID we have is in our database or not.
-    :param table: Which DB table we want to look through to see if the ID is in there.
+    :param table: Which DB table_name we want to look through to see if the ID is in there.
     :param id_string: The ID of the photo returned by Pexels API (the photo.id object value)
     :returns: True if the photo ID is in the DB, else, false.
     """
@@ -209,7 +209,7 @@ def id_is_in_db(table, id_string):
 
 def get_search_terms():
     """
-    This function gets the search terms from the search terms table in the DB. It will return a list of search term
+    This function gets the search terms from the search terms table_name in the DB. It will return a list of search term
     that we can use for the keyword searches. In reality, we will pick a random one from this 1d array that it returns.
     :returns: 1 dimensional list containing a list of strings that represent our search terms to be used later.
     """
@@ -229,7 +229,7 @@ def log_to_DB(formatted_tuple: tuple):
     cursor.execute('INSERT INTO Nature_Bot_Logged_FB_Posts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', formatted_tuple)
 
 
-def process_photos(photos):
+def process_photos(photos, attempted_posts):
     """
     This is the function that primarily makes decisions with the photos.
     It goes through a series of if statements to figure out if the photo
@@ -253,9 +253,18 @@ def process_photos(photos):
         photo_original = photo.original
         photo_file_size = get_file_size(photo.large)
 
+        # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
+        # in this case, if the function returns True, because of the done = False thing in the next function, it will
+        # kill the loop. In this case this is like a failsafe to make sure the script doesn't run forever in the case of
+        # some issue with FB servers.
+        if attempted_posts >= 5:
+            return True
+
+        # if the photo doesn't have an acceptable file extention to post, try another photo.
         if not acceptable_extension(photo_extension):
             continue
 
+        # if the photo id is already in the database, we've posted it before, try another photo.
         if id_is_in_db('Nature_Bot_Logged_FB_Posts', str(photo.id)):
             continue
 
@@ -263,27 +272,31 @@ def process_photos(photos):
         if photo_file_size >= 4000:
             continue
 
-        print(photo_description_word_check)
-
-        if not no_badwords(photo_description_word_check):
+        # Adding in a clause to control for if there just simply is no photo description, which would get around our
+        # bad word filtering here.
+        if not no_badwords(photo_description_word_check) or not photo_description:
             continue
 
         # img_hash the image we just saved
         hash_str = write_image(photo_url, "image.jpg")
 
+        # if the hash string of the image is already in the database, then we've posted a similar photo before.
         if image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
             continue
 
+        # scan to make sure there are no bad words inside the image itself. This can be defeated but eh it's worth a shot.
         no_badwords_in_img = no_badwords(ocr_text("image.jpg"))
 
         if not no_badwords_in_img:
             continue
 
+        # make a network request to post the current photo to FB
         post_to_fb_request = post_to_fb(photo_url)
         fb_post_id = get_post_id_from_json(post_to_fb_request)
         successful_post = fb_post_id in post_to_fb_request
 
         if not successful_post:
+            attempted_posts += 1
             continue
 
         else:
@@ -334,9 +347,10 @@ def main():
     Search_Terms = get_search_terms()  # list of art sources to use from Pexels
     searched_term = str(random.choice(Search_Terms))
     api.search_photo(searched_term, page=1, results_per_page=15)
+    attempted_posts = 0
     done = False
     while not done:
-        done = process_photos(photos=api.get_photo_entries())
+        done = process_photos(photos=api.get_photo_entries(), attempted_posts=attempted_posts)
         if not done:
             api.search_next_page()
 
