@@ -244,15 +244,7 @@ def process_photos(photos, attempted_posts):
     for photo in photos:
 
         photo_description = photo.description.replace("-", " ")
-
-        # another method of grabbing the description if the original doesn't work. Need to update the Pexels API wrapper
-        # itself for this but it will work for now as a fail-safe.
-        if not photo_description:
-            photo_description_split_up = photo.url.split("/")[-2].replace("-{}".format(photo.id), "")
-            photo_description = ''.join(photo_description_split_up).replace("-", " ")
-
         photo_description_word_check = photo_description.split(" ")
-
         photo_user = photo.photographer
         photo_id = str(photo.id)
         photo_permalink = photo.url
