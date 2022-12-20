@@ -244,7 +244,15 @@ def process_photos(photos, attempted_posts):
     for photo in photos:
 
         photo_description = photo.description.replace("-", " ")
-        photo_description_word_check = photo_description.lower().split(" ")
+
+        # another method of grabbing the description if the original doesn't work. Need to update the Pexels API wrapper
+        # itself for this but it will work for now as a fail-safe.
+        if not photo_description:
+            photo_description_split_up = photo.url.split("/")[-2].replace("-{}".format(photo.id), "")
+            photo_description = ''.join(photo_description_split_up).replace("-", " ")
+
+        photo_description_word_check = photo_description.split(" ")
+
         photo_user = photo.photographer
         photo_id = str(photo.id)
         photo_permalink = photo.url
@@ -274,7 +282,7 @@ def process_photos(photos, attempted_posts):
 
         # Adding in a clause to control for if there just simply is no photo description, which would get around our
         # bad word filtering here.
-        if not no_badwords(photo_description_word_check) or not photo_description:
+        if not no_badwords(photo_description_word_check):
             continue
 
         # img_hash the image we just saved
