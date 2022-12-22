@@ -23,71 +23,74 @@ from image_processing import Image_Processing
 from fb_posting import FB_Posting
 
 
-def process_videos(videos: list, attempted_posts: int, database, searched_term):
-    """
-    This is the function that primarily makes decisions with the videos.
-    It goes through a series of if statements to figure out if the video
-    is worth posting to FB or not based on a given criteria below.
-    :param videos: list of videos to iterate through, retrieved from
-    the next function below.
-    :param attempted_posts: This is an integer which will represent the number of times it posted to FB or not.
-    :param database: sqlite3 database file to add values to.
-    :param searched_term: The search key term that we used to search for the right video through pexels api search.
-    :returns: Spreadsheet values to send, this will evaluate to True and allow
-    the code to stop running once the post has been logged to the spreadsheet.
-    """
+class Pexels_Video_Posting:
 
-    for video in videos:
-        video_file_size = Image_Processing.get_file_size(video.link)
-        bad_words_list = database.retrieve_values_from_table_column("Bad_Words", "Bad_Words")
+    @staticmethod
+    def process_videos(videos: list, attempted_posts: int, database, searched_term):
+        """
+        This is the function that primarily makes decisions with the videos.
+        It goes through a series of if statements to figure out if the video
+        is worth posting to FB or not based on a given criteria below.
+        :param videos: list of videos to iterate through, retrieved from
+        the next function below.
+        :param attempted_posts: This is an integer which will represent the number of times it posted to FB or not.
+        :param database: sqlite3 database file to add values to.
+        :param searched_term: The search key term that we used to search for the right video through pexels api search.
+        :returns: Spreadsheet values to send, this will evaluate to True and allow
+        the code to stop running once the post has been logged to the spreadsheet.
+        """
 
-        # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
-        # in this case, if the function returns True, because of the done = False thing in the next function, it will
-        # kill the loop. In this case this is like a failsafe to make sure the script doesn't run forever in the case of
-        # some issue with FB servers.
-        if attempted_posts >= 5:
-            return True
+        for video in videos:
+            video_file_size = Image_Processing.get_file_size(video.link)
+            bad_words_list = database.retrieve_values_from_table_column("Bad_Words", "Bad_Words")
 
-        if not Text_Processing.acceptable_extension_for_video_posting(video.extension):
-            continue
+            # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
+            # in this case, if the function returns True, because of the done = False thing in the next function, it will
+            # kill the loop. In this case this is like a failsafe to make sure the script doesn't run forever in the case of
+            # some issue with FB servers.
+            if attempted_posts >= 5:
+                return True
 
-        if str(video.id) in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts_Videos', 'ID'):
-            continue
+            if not Text_Processing.acceptable_extension_for_video_posting(video.extension):
+                continue
 
-        # make sure the file size is less than 1 GB. (This is primarily for FB posting limitations).
-        if video_file_size >= 1_000_000:
-            continue
+            if str(video.id) in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts_Videos', 'ID'):
+                continue
 
-        # If the video is greater than 20 minutes long, start over. (also for FB Positing limitations)
-        if video.duration >= 1_200:
-            continue
+            # make sure the file size is less than 1 GB. (This is primarily for FB posting limitations).
+            if video_file_size >= 1_000_000:
+                continue
 
-        if Text_Processing.there_are_badwords(video.description.lower().split(" "), bad_words_list):
-            continue
+            # If the video is greater than 20 minutes long, start over. (also for FB Positing limitations)
+            if video.duration >= 1_200:
+                continue
 
-        post_to_fb_request = FB_Posting.post_video_to_fb(video.link, video.description, video.url)
-        fb_post_id = Text_Processing.get_post_id_from_json(post_to_fb_request)
+            if Text_Processing.there_are_badwords(video.description.lower().split(" "), bad_words_list):
+                continue
 
-        if not fb_post_id:
-            print("Post was not successful")
-            attempted_posts += 1
-            continue
+            post_to_fb_request = FB_Posting.post_video_to_fb(video.link, video.description, video.url)
+            fb_post_id = Text_Processing.get_post_id_from_json(post_to_fb_request)
 
-        else:
-            print("Photo was posted to FB")
+            if not fb_post_id:
+                print("Post was not successful")
+                attempted_posts += 1
+                continue
 
-            dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
+            else:
+                print("Photo was posted to FB")
 
-            data_to_log = (
-                dt_string, str(post_to_fb_request), str(video.description), str(video.videographer),
-                str(video.id), searched_term, int(video.duration), str(video.url),
-                str(video.link), float(video_file_size),
-            )
+                dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
 
-            database.log_to_DB(formatted_tuple=data_to_log, table_to_add_values_to="Nature_Bot_Logged_FB_Posts_Videos")
-            print("Data has been logged to the database. All done!")
-            database.connect.close()
-            return data_to_log
+                data_to_log = (
+                    dt_string, str(post_to_fb_request), str(video.description), str(video.videographer),
+                    str(video.id), searched_term, int(video.duration), str(video.url),
+                    str(video.link), float(video_file_size),
+                )
+
+                database.log_to_DB(formatted_tuple=data_to_log, table_to_add_values_to="Nature_Bot_Logged_FB_Posts_Videos")
+                print("Data has been logged to the database. All done!")
+                database.connect.close()
+                return data_to_log
 
 
 def main():
@@ -113,7 +116,7 @@ def main():
     attempted_posts = 0
     done = False
     while not done:
-        done = process_videos(videos=api.get_video_entries(), attempted_posts=attempted_posts,
+        done = Pexels_Video_Posting.process_videos(videos=api.get_video_entries(), attempted_posts=attempted_posts,
                               database=database_instance, searched_term=searched_term)
         if not done:
             api.search_next_page()
