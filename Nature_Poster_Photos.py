@@ -24,25 +24,8 @@ from pexels_api import API  # need this to get images to use from Pexels (our so
 from datetime import datetime  # used for date and time in the FB log posting, so we know when things were posted to FB
 import facebook  # to add captions and comments to existing posts.
 import json  # to decipher the dictionary we get back in return from FB servers. (Mainly this is used to edit captions to the posts).
-import sqlite3  # our database access, where all the posts get logged to, a local DB file on the Raspberry Pi.
 import re  # used for getting rid of special characters in the OCR text.
-
-
-def no_badwords(sentence: list[str]):
-    """
-    This function checks a list of strings to see if there is a bad word in the given list of strings.
-
-    :param sentence: This is any list of strings you wish to check for bad words in.
-    :returns:  Returns True if there is no bad-word in the given sentence list of strings, false otherwise.
-    """
-    cursor.execute('SELECT * FROM Bad_Words')
-    Bad_Words_from_DB_Tuples = cursor.fetchall()
-    Bad_Words_List = [item for word in Bad_Words_from_DB_Tuples for item in word]
-
-    for word in Bad_Words_List:
-        word.lower()
-
-    return not any(word in sentence for word in Bad_Words_List)
+from database import Database
 
 
 def write_image(url: str, filename: str) -> str:
@@ -62,10 +45,11 @@ def write_image(url: str, filename: str) -> str:
     return str(img_hash)
 
 
-def ocr_text(filename):
+def ocr_text(filename: str):
     """
     This function runs OCR on the given image file below, then returns
     its text as a list of strings.
+    :param filename: String of the name of the image file you wish to extract text from.
     :returns: ocr_text_list - which is a list of strings from words in the image
     """
 
@@ -163,79 +147,22 @@ def edit_fb_post_caption(post_id, photo_description, photo_permalink):
 
     # edit caption of existing fb post we just made
     fb.put_object(parent_object=f'{fb_page_id}_{post_id}', connection_name='',
-                  message=f'Description: {photo_description}\n\nPexels image link: {photo_permalink}\n\n'
-                          f'P.S. This Facebook post was created by a bot. To learn more about how it works,'
-                          f' check out the GitHub page here: {GitHub_Link}')
+                  message=f'''Description: {photo_description}\n\nPexels image link: {photo_permalink}\n\n 
+                  P.S. This Facebook post was created by a bot. To learn more about how it works,
+                   check out the GitHub page here: {GitHub_Link}''')
 
 
-def image_hash_is_in_db(table, hash_string):
-    """
-    The purpose of this function is to check if the image_hash we have is in our database or not.
-    :param table: Which DB table_name we want to look through to see if the hash is in there.
-    :param hash_string: Image Hash String (pretty self-explanatory)
-    :returns: True if the image hash is in the DB, else, false.
-    """
-
-    cursor.execute(f'SELECT Image_Hash FROM {table} WHERE Image_Hash="{hash_string}"')
-
-    hash_from_db = cursor.fetchall()
-
-    if hash_from_db:
-        return True
-
-    else:
-        return False
-
-
-def id_is_in_db(table, id_string):
-    """
-    The purpose of this function is to check if the photo ID we have is in our database or not.
-    :param table: Which DB table_name we want to look through to see if the ID is in there.
-    :param id_string: The ID of the photo returned by Pexels API (the photo.id object value)
-    :returns: True if the photo ID is in the DB, else, false.
-    """
-
-    cursor.execute(f'SELECT ID FROM {table} WHERE ID="{id_string}"')
-
-    IDs_from_db = cursor.fetchall()
-
-    if IDs_from_db:
-
-        return True
-
-    else:
-        return False
-
-
-def get_search_terms():
-    """
-    This function gets the search terms from the search terms table_name in the DB. It will return a list of search term
-    that we can use for the keyword searches. In reality, we will pick a random one from this 1d array that it returns.
-    :returns: 1 dimensional list containing a list of strings that represent our search terms to be used later.
-    """
-
-    cursor.execute('Select * FROM Photo_Search_Terms')
-    Search_Terms_from_DB = cursor.fetchall()
-
-    return [item for word in Search_Terms_from_DB for item in word]
-
-
-def log_to_DB(formatted_tuple: tuple):
-    """
-    The purpose of this function is to log our grabbed info from the get_photo function over to the database
-    :param formatted_tuple: tuple containing the info that the user wishes to log to the database
-    :returns: None
-    """
-    cursor.execute('INSERT INTO Nature_Bot_Logged_FB_Posts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', formatted_tuple)
-
-
-def process_photos(photos, attempted_posts):
+def process_photos(photos, attempted_posts, database):
     """
     This is the function that primarily makes decisions with the photos.
     It goes through a series of if statements to figure out if the photo
     is worth posting to FB or not based on a given criteria below.
+
     :param photos: list of photos to iterate through, retrieved from
     the next function below.
+    :param attempted_posts: integer representing the number of times we've already tried to post an image.
+    :param database: This represents the database class instance from the database.py file.
+
     :returns: Spreadsheet values to send, this will evaluate to True and allow
     the code to stop running once the post has been logged to the spreadsheet.
     """
@@ -252,6 +179,7 @@ def process_photos(photos, attempted_posts):
         photo_url = photo.large
         photo_original = photo.original
         photo_file_size = get_file_size(photo.large)
+        bad_words_list = database.retrieve_values_from_table_column("Bad_Words", "Bad_Words")
 
         # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
         # in this case, if the function returns True, because of the done = False thing in the next function, it will
@@ -265,29 +193,25 @@ def process_photos(photos, attempted_posts):
             continue
 
         # if the photo id is already in the database, we've posted it before, try another photo.
-        if id_is_in_db('Nature_Bot_Logged_FB_Posts', str(photo.id)):
+        if str(photo.id) in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts', 'ID'):
             continue
 
         # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
         if photo_file_size >= 4000:
             continue
 
-        # Adding in a clause to control for if there just simply is no photo description, which would get around our
-        # bad word filtering here.
-        if not no_badwords(photo_description_word_check):
+        if any(word in photo_description_word_check for word in bad_words_list):
             continue
 
-        # img_hash the image we just saved
+        # hash the image we just saved
         hash_str = write_image(photo_url, "image.jpg")
 
         # if the hash string of the image is already in the database, then we've posted a similar photo before.
-        if image_hash_is_in_db('Nature_Bot_Logged_FB_Posts', hash_str):
+        if hash_str in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts', 'Image_Hash'):
             continue
 
-        # scan to make sure there are no bad words inside the image itself. This can be defeated but eh it's worth a shot.
-        no_badwords_in_img = no_badwords(ocr_text("image.jpg"))
-
-        if not no_badwords_in_img:
+        image_text = ocr_text("image.jpg")
+        if any(word.lower() in image_text for word in bad_words_list):
             continue
 
         # make a network request to post the current photo to FB
@@ -315,13 +239,9 @@ def process_photos(photos, attempted_posts):
                 float(photo_file_size), hash_str
             )
 
-            log_to_DB(data_to_log)
-
+            database.log_to_DB(data_to_log, "Nature_Bot_Logged_FB_Posts")
             print("Data has been logged to the database. All done!")
-
-            connect.commit()
-            connect.close()
-
+            database.connect.close()
             break
 
     return data_to_log
@@ -337,20 +257,20 @@ def main():
     :returns: None
     """
 
-    global done, connect, cursor
+    global done
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(BASE_DIR, "Nature_Bot_Data.db")
-    connect = sqlite3.connect(db_path)
-    cursor = connect.cursor()
+    db_path_and_name = os.path.join(BASE_DIR, "Nature_Bot_Data.db")
+    database_instance = Database(db_path_and_name)
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
-    Search_Terms = get_search_terms()  # list of art sources to use from Pexels
-    searched_term = str(random.choice(Search_Terms))
+    search_terms = database_instance.retrieve_values_from_table_column("Photo_Search_Terms", "Terms")
+    searched_term = str(random.choice(search_terms))
     api.search_photo(searched_term, page=1, results_per_page=15)
     attempted_posts = 0
     done = False
     while not done:
-        done = process_photos(photos=api.get_photo_entries(), attempted_posts=attempted_posts)
+        done = process_photos(photos=api.get_photo_entries(), attempted_posts=attempted_posts,
+                              database=database_instance)
         if not done:
             api.search_next_page()
 
