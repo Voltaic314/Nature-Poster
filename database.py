@@ -34,13 +34,19 @@ class Database:
         :returns: None
         """
 
-        number_of_items_to_add = len(formatted_tuple)
-        formatted_string = "("
-        for i in range(number_of_items_to_add):
-            formatted_string += "?, "
-        formatted_string += ")"
-        self.cursor.execute(f'INSERT INTO {table_to_add_values_to} VALUES {formatted_string}', formatted_tuple)
-        self.connect.commit()
+        # The if is to make sure there is anything in the tuple at all, otherwise don't log anything to the database.
+        if formatted_tuple:
+            if len(formatted_tuple) > 1:
+                formatted_string = "("
+                formatted_string += "?, " * (len(formatted_tuple) - 1)
+                formatted_string += "?)"
+                self.cursor.execute(f'INSERT INTO {table_to_add_values_to} VALUES {formatted_string}', formatted_tuple)
+                self.connect.commit()
+
+            elif len(formatted_tuple) == 1:
+                formatted_string = "(?)"
+                self.cursor.execute(f'INSERT INTO {table_to_add_values_to} VALUES {formatted_string}', formatted_tuple)
+                self.connect.commit()
 
     def retrieve_values_from_table_column(self, name_of_table_to_retrieve_from: str, name_of_column: str) -> list:
         """

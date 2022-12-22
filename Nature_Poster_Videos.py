@@ -41,7 +41,9 @@ class Pexels_Video_Posting:
         """
 
         for video in videos:
-            video_file_size = Image_Processing.get_file_size(video.link)
+            video_permalink = video.url
+            video_direct_url = video.link
+            video_file_size = Image_Processing.get_file_size(video_direct_url)
             bad_words_list = database.retrieve_values_from_table_column("Bad_Words", "Bad_Words")
 
             # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
@@ -68,7 +70,7 @@ class Pexels_Video_Posting:
             if Text_Processing.there_are_badwords(video.description.lower().split(" "), bad_words_list):
                 continue
 
-            post_to_fb_request = FB_Posting.post_video_to_fb(video.link, video.description, video.url)
+            post_to_fb_request = FB_Posting.post_video_to_fb(video)
             fb_post_id = Text_Processing.get_post_id_from_json(post_to_fb_request)
 
             if not fb_post_id:
@@ -83,8 +85,8 @@ class Pexels_Video_Posting:
 
                 data_to_log = (
                     dt_string, str(post_to_fb_request), str(video.description), str(video.videographer),
-                    str(video.id), searched_term, int(video.duration), str(video.url),
-                    str(video.link), float(video_file_size),
+                    str(video.id), searched_term, int(video.duration), str(video_permalink),
+                    str(video_direct_url), float(video_file_size),
                 )
 
                 database.log_to_DB(formatted_tuple=data_to_log, table_to_add_values_to="Nature_Bot_Logged_FB_Posts_Videos")

@@ -9,23 +9,20 @@ import config
 
 
 class FB_Posting:
-    def __init__(self):
-        pass
 
     @staticmethod
-    def post_photo_to_fb(photo_url):
+    def post_photo_to_fb(photo: object):
         """
         This function posts to fb given a specific photo_url that
         you wish to use.
-        :param photo_url: any url of an image, must end in .jpg or something similar.
+        :param photo: image object from pexels api search
         :returns: response from FB servers with the post id or an error
         """
 
         fb_page_id = "101111365975816"
-        msg = photo_url
         post_url = f'https://graph.facebook.com/{fb_page_id}/photos'
         payload = {
-            "url": msg,
+            "url": photo.large2x,
             "access_token": config.config_stuff['FB_Access_Token']
         }
 
@@ -33,26 +30,24 @@ class FB_Posting:
         return post_to_fb_request.text
 
     @staticmethod
-    def post_video_to_fb(video: object, video_description: str, video_permalink: str):
+    def post_video_to_fb(video: object):
         """
         This function posts to fb given a specific video_permalink that you wish to use.
 
-        :param video: pexels video object from the pexels api.
-        :param video_description: the description attribute of the video class instance, ideally like the alt txt of the vid
-        :param video_permalink: the permalink of the video that links back to the original Pexels post.
+        :param video: video object from pexels API search result
         :returns: response from FB servers with the post id or an error
         """
 
         fb_page_id = "101111365975816"
         post_url = f'https://graph.facebook.com/{fb_page_id}/videos'
         GitHub_Link = 'https://github.com/Voltaic314/Nature-Poster'
-        message = f'''Description: {video_description}\n\nPexels link: {video_permalink}\n\n 
+        message = f'''Description: {video.description}\n\nPexels link: {video.url}\n\n 
         P.S. This Facebook post was created by a bot. To learn more about how it works,
          check out the GitHub page here: {GitHub_Link}'''
 
         payload = {
             "file_url": video.link,
-            "title": video_description,
+            "title": video.description,
             "description": message,
             "access_token": config.config_stuff['FB_Access_Token']
         }

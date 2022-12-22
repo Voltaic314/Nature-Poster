@@ -33,7 +33,7 @@ class Image_Processing:
             f.write(requests.get(url).content)
 
     @staticmethod
-    def hash_image(filename) -> str:
+    def hash_image(filename: str) -> str:
         """
         Run a difference hash and return the hash string from the given image specified in the file name.
 

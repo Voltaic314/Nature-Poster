@@ -67,10 +67,11 @@ class Pexels_Photo_Processing:
             if any(word in photo_description_word_check for word in bad_words_list):
                 continue
 
-            # hash the image we just saved
-            downloaded_image = Image_Processing.write_image(photo.large, "image.jpg")
+            # download the image
+            Image_Processing.write_image(photo.large2x, "image.jpg")
 
-            hash_str = Image_Processing.hash_image(downloaded_image)
+            # hash the image we just downloaded
+            hash_str = Image_Processing.hash_image("image.jpg")
 
             # if the hash string of the image is already in the database, then we've posted a similar photo before.
             if hash_str in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts', 'Image_Hash'):
@@ -81,7 +82,7 @@ class Pexels_Photo_Processing:
                 continue
 
             # make a network request to post the current photo to FB
-            post_to_fb_request = FB_Posting.post_photo_to_fb(photo.large)
+            post_to_fb_request = FB_Posting.post_photo_to_fb(photo)
             fb_post_id = Text_Processing.get_post_id_from_json(post_to_fb_request)
             successful_post = fb_post_id in post_to_fb_request
 
@@ -101,7 +102,7 @@ class Pexels_Photo_Processing:
 
                 data_to_log = (
                     dt_string, str(post_to_fb_request), str(photo_description), str(photo.photographer),
-                    str(photo.id), str(photo.url), str(photo.large), str(photo.original),
+                    str(photo.id), str(photo.url), str(photo.large2x), str(photo.original),
                     float(photo_file_size), hash_str
                 )
 
