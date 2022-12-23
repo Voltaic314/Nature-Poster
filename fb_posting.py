@@ -42,8 +42,8 @@ class FB_Posting:
         post_url = f'https://graph.facebook.com/{fb_page_id}/videos'
         GitHub_Link = 'https://github.com/Voltaic314/Nature-Poster'
         message = f'''Description: {video.description}\n\nPexels link: {video.url}\n\n 
-        P.S. This Facebook post was created by a bot. To learn more about how it works,
-         check out the GitHub page here: {GitHub_Link}'''
+P.S. This Facebook post was created by a bot. To learn more about how it works, 
+check out the GitHub page here: {GitHub_Link}'''
 
         payload = {
             "file_url": video.link,
