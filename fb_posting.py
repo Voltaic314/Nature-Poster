@@ -41,9 +41,9 @@ class FB_Posting:
         fb_page_id = "101111365975816"
         post_url = f'https://graph.facebook.com/{fb_page_id}/videos'
         GitHub_Link = 'https://github.com/Voltaic314/Nature-Poster'
-        message = f'''Description: {video.description}\n\nPexels link: {video.url}\n\n 
-P.S. This Facebook post was created by a bot. To learn more about how it works, 
-check out the GitHub page here: {GitHub_Link}'''
+        message = f'Description: {video.description}\n\nPexels link: {video.url}\n\n' \
+                  f'P.S. This Facebook post was created by a bot. To learn more about how it works, ' \
+                  f'check out the GitHub page here: {GitHub_Link}'
 
         payload = {
             "file_url": video.link,
@@ -74,6 +74,6 @@ check out the GitHub page here: {GitHub_Link}'''
 
         # edit caption of existing fb post we just made
         fb.put_object(parent_object=f'{fb_page_id}_{post_id}', connection_name='',
-                      message=f'''Description: {photo_description}\n\nPexels image link: {photo_permalink}\n\n 
-                      P.S. This Facebook post was created by a bot. To learn more about how it works,
-                       check out the GitHub page here: {GitHub_Link}''')
+                      message=f'Description: {photo_description}\n\nPexels image link: {photo_permalink}\n\n'
+                              f'P.S. This Facebook post was created by a bot. To learn more about how it works, '
+                              f'check out the GitHub page here: {GitHub_Link}')
