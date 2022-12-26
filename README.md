@@ -5,7 +5,7 @@ These scripts were created by Logan Maupin. I'm a student at the University of A
 
 This project has been a fun side hobby of mine after I made the Reddit Meme poster. I originally had the thought of, after I made the meme poster, what if we made a bot that instead of sharing memes it just shares absolutely beautiful landscapes / nature videos / art drawings that people made. My original idea was to make a sort of tattoo art page that shares beautiful tattoo pictures automatically, but the problem is that this is hard to moderate in FB because most tattoo pics are usually labeled as NSFW so I settled upon beautiful landscapes, nature, and scenary art.
 
------------------------
+------------------------
 
 How does it work? 
 
