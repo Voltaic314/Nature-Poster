@@ -18,7 +18,7 @@ Thanks for reading. If you have questions feel free to reach out to me and if yo
 You can visit my FB page for this project at https://www.facebook.com/AutomaticNaturePosts/
 
 
------------------------
+------------------------
 1 big issue with this code and 2 minor things:
 
 TODO: (see below issues)
