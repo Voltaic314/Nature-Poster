@@ -112,8 +112,7 @@ def main():
     PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
     search_terms = database_instance.retrieve_values_from_table_column("Photo_Search_Terms", "Terms")
-    # searched_term = str(random.choice(search_terms))
-    searched_term = "fireworks"
+    searched_term = str(random.choice(search_terms))
     api.search_video(searched_term, page=1, results_per_page=15)
 
     attempted_posts = 0
