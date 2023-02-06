@@ -2,7 +2,7 @@
 
 ### Developed by **Logan Maupin**
 
-I'm a student at the University of Arizona studying Applied Computing with an emphasis in Applied Artificial Intelligence. I hope to one day contribute to AI development for detecting threats and/or aiding human development. Nature Poster is an automatic Facebook posting bot I developed with Python as a side project.
+I'm a student at the University of Arizona studying Applied Computing with an emphasis in Applied Artificial Intelligence. I hope to one day create and work on AI for detecting threats and/or aiding human development. Nature Poster is an automatic Facebook posting bot I developed with Python as a side project.
 
 🌱 🌲 🌿 🌳
 
@@ -21,9 +21,15 @@ Nature Poster is an automatic bot scripted to periodically make nature-themed ph
 - Video of a fish and a turtle near coral
   ![Fish and turtle under the sea](/documentation-images/example-video-post.png)
 
-The posts include a short, simple description of the video or image and a link to the original content source. All images and videos are sourced exclusively from Pexels, a site for free high resolution stock media.
+The posts include a short, simple description of the image or video and a url link to the original content source. All images and videos are sourced exclusively from Pexels, a copyright-free site for high resolution stock media.
 
-## How does it work?
+## **How does it work?**
+
+Nature Poster searches for and retrieves photos/videos via GET requests to the Pexels API. The API returns 15 photos/videos constituting a single page's worth of results, and the bot can access further pages if no result from the initial batch translates to a successful Facebook post.
+
+The bot randomly selects a search term from a list of nature-related terms in a SQLite3 table named _Photo_Search_Terms_.
+
+![SQLite3 table GUI first ten rows in Photo_Search_Terms](/documentation-images/photo_search_terms.png)
 
 Basically it calls Pexels API and searches photos by key terms through a word list in the master spreadsheet. It will pick through those search results to make sure they are not NSFW or contain any badwords, and also ones that haven't been posted before. Once it finds a photo that meets that criteria, it will post it to FB. Once posted to FB, it will log the post to a google sheet so we can keep track of when & what was posted. This helps us keep down on duplicate posts.
 
