@@ -21,15 +21,33 @@ Nature Poster is an automatic bot scripted to periodically make nature-themed ph
 - Video of a fish and a turtle near coral
   ![Fish and turtle under the sea](/documentation-images/example-video-post.png)
 
-The posts include a short, simple description of the image or video and a url link to the original content source. All images and videos are sourced exclusively from Pexels, a copyright-free site for high resolution stock media.
+The posts include a short, simple description of the image or video and a URL link to the original content source. All images and videos are sourced exclusively from Pexels, a copyright-free site for high resolution stock media.
 
 ## **How does it work?**
 
-Nature Poster searches for and retrieves photos/videos via GET requests to the Pexels API. The API returns 15 photos/videos constituting a single page's worth of results, and the bot can access further pages if no result from the initial batch translates to a successful Facebook post.
+Nature Poster searches for and retrieves photos/videos via GET requests to the Pexels API. The reqest parameters are configured so that the API returns 15 photos/videos that consitute a single page's worth of results, and the bot can access further pages if no result from the initial batch converts to a successful Facebook post.
 
 The bot randomly selects a search term from a list of nature-related terms in a SQLite3 table named _Photo_Search_Terms_.
 
 ![SQLite3 table GUI first ten rows in Photo_Search_Terms](/documentation-images/photo_search_terms.png)
+
+Once the data from the API has been fetched, the bot picks the first image and sequentially cycles through criteria to determine if the current image meets the requirements to be posted. This photo processing is accomplished via a method belonging to the **Pexels_Photo_Processing** class in the _Nature_Poster_Photos_ module.
+
+These criteria include:
+
+- Photo or video description parsed from URL cannot contain a prohibited word, as this would be considered NSFW media.
+- A prohibited word cannot be present in the photo itself, either as a caption or displayed on any object, structure, or item of apparel, as this would be considered NSFW media.
+- Photo or video must have an acceptable file extension, i.e., jpg, png, etc., if photo.
+- Photo or video cannot be a duplicate post; it must not already be in either the database table named _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_.
+- Hash string of downloaded image must not already be in the database. This criterion is necessary because the same photo can be reposted on Pexels with a different id.
+- Video file size must be smaller than 1 GB, and photo file size must be smaller than 4 MB.
+- Video duration must be shorter than 20 minutes long, to comply with Facebook posting limitations.
+
+If an image or video candidate survives all the foregoing criteria, then the bot will attempt to post it to Facebook by making a network request to the Facebook API.
+
+If the attempt fails, the bot will move on to the next image and initiate the same sequential order of processing filters.
+
+The script allows for five attempts before the loop of searching through images is stopped. This behavior represents a crucial failsafe that ensures the script won't infinitely run in the event Facebook servers experience an ongoing issue.
 
 Basically it calls Pexels API and searches photos by key terms through a word list in the master spreadsheet. It will pick through those search results to make sure they are not NSFW or contain any badwords, and also ones that haven't been posted before. Once it finds a photo that meets that criteria, it will post it to FB. Once posted to FB, it will log the post to a google sheet so we can keep track of when & what was posted. This helps us keep down on duplicate posts.
 
