@@ -31,7 +31,9 @@ The bot randomly selects a search term from a list of nature-related terms in a 
 
 ![SQLite3 table GUI first ten rows in Photo_Search_Terms](/documentation-images/photo_search_terms.png)
 
-Once the data from the API has been fetched, the bot picks the first image and sequentially cycles through criteria to determine if the current image meets the requirements to be posted. This photo processing is accomplished via a method belonging to the **Pexels_Photo_Processing** class in the _Nature_Poster_Photos_ module.
+Once the list of images or videos from the API has been fetched, the bot will loop through it. For each image or video, the bot sequentially cycles through criteria to determine if it meets the requirements to be posted. This photo processing is accomplished via a method belonging to the **Pexels_Photo_Processing** class in the _Nature_Poster_Photos_ module.
+
+At the first failed criterion, the bot discards the image or video under consideration and the loop begins anew with the next item.
 
 These criteria include:
 
@@ -47,7 +49,7 @@ If an image or video candidate survives all the foregoing criteria, then the bot
 
 If the attempt fails, the bot will move on to the next image and initiate the same sequential order of processing filters.
 
-The script allows for five attempts before the loop of searching through images is stopped. This behavior represents a crucial failsafe that ensures the script won't infinitely run in the event Facebook servers experience an ongoing issue.
+The script allows for five attempts before the loop searching through images is stopped. This behavior represents a crucial failsafe that ensures the script won't infinitely run in the event Facebook servers experience an ongoing issue.
 
 Basically it calls Pexels API and searches photos by key terms through a word list in the master spreadsheet. It will pick through those search results to make sure they are not NSFW or contain any badwords, and also ones that haven't been posted before. Once it finds a photo that meets that criteria, it will post it to FB. Once posted to FB, it will log the post to a google sheet so we can keep track of when & what was posted. This helps us keep down on duplicate posts.
 
