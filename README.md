@@ -17,9 +17,12 @@ Nature Poster is an automatic bot scripted to periodically make nature-themed ph
 ### Example posts:
 
 - Photograph of a snowy tree branch
-  ![Closeup photo of a tree branch with snow](/documentation-images/example-image-post.png)
+
+![Closeup photo of a tree branch with snow](/documentation-images/example-image-post.png)
+
 - Video of a fish and a turtle near coral
-  ![Fish and turtle under the sea](/documentation-images/example-video-post.png)
+
+![Fish and turtle under the sea](/documentation-images/example-video-post.png)
 
 The posts include a short, simple description of the image or video and a URL link to the original content source. All images and videos are sourced exclusively from Pexels, a royalty free site for high resolution stock media.
 
