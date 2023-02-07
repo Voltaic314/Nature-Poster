@@ -21,11 +21,11 @@ Nature Poster is an automatic bot scripted to periodically make nature-themed ph
 - Video of a fish and a turtle near coral
   ![Fish and turtle under the sea](/documentation-images/example-video-post.png)
 
-The posts include a short, simple description of the image or video and a URL link to the original content source. All images and videos are sourced exclusively from Pexels, a copyright-free site for high resolution stock media.
+The posts include a short, simple description of the image or video and a URL link to the original content source. All images and videos are sourced exclusively from Pexels, a royalty free site for high resolution stock media.
 
 ## **How does it work?**
 
-Nature Poster searches for and retrieves photos/videos via GET requests to the Pexels API. The reqest parameters are configured so that the API returns 15 photos/videos that consitute a single page's worth of results, and the bot can access further pages if no result from the initial batch converts to a successful Facebook post.
+Nature Poster searches for and retrieves photos/videos via GET requests to the Pexels API. The request parameters are configured so that the API returns 15 photos/videos that consitute a single page's worth of results, and the bot can access further pages if no result from the initial batch converts to a successful Facebook post.
 
 The bot randomly selects a search term from a list of nature-related terms in a SQLite3 table named _Photo_Search_Terms_.
 
