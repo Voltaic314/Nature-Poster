@@ -114,6 +114,13 @@ Lighting conditions are an extremely important factor in computer vision and are
 
 Our OCR image processing result is a string whose words are then checked for a bad or prohiibted word.
 
+```python
+image_text = Image_Processing.ocr_text("image.jpg")
+
+if Text_Processing.there_are_badwords(image_text, bad_words_list):
+      continue
+```
+
 ### **Posting to Facebook**
 
 If an image or video candidate survives all the foregoing criteria, then the bot attempts to post it to Facebook with a network request to the Facebook API.
