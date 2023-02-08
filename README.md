@@ -142,6 +142,9 @@ f'P.S. This Facebook post was created by a bot. To learn more about how it works
 f'check out the GitHub page here: {GitHub_Link}')
 ```
 
+Another example caption:
+![Example caption for successful photo post](/documentation-images/example-caption.png)
+
 ### **Inserting data into sqlite3 db**
 
 Post officially complete, the bot will then insert metadata about the post (media description, media URL, hash string, file size, Facebook post ID, etc.) to the _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_ table.
