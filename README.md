@@ -4,6 +4,10 @@
 
 I'm a student at the University of Arizona studying Applied Computing with an emphasis in Applied Artificial Intelligence. I hope to one day create and work on AI for detecting threats and/or aiding human development. Nature Poster is an automatic Facebook posting bot I developed with Python as a side project.
 
+If you have any questions or suggestions on how to improve the code, feel free to reach out to me!
+
+[Link to Facebook page Nature Poster makes posts to](https://www.facebook.com/AutomaticNaturePosts/)
+
 🌱 🌲 🌿 🌳
 
 ---
@@ -34,39 +38,39 @@ The bot randomly selects a search term from a list of nature-related terms in a 
 
 ![SQLite3 table GUI first ten rows in Photo_Search_Terms](/documentation-images/photo_search_terms.png)
 
-Once the list of images or videos from the API has been fetched, the bot will loop through it. For each image or video, the bot sequentially cycles through criteria to determine if it meets the requirements to be posted. This photo processing is accomplished via a method belonging to the **Pexels_Photo_Processing** class in the _Nature_Poster_Photos_ module.
+Once the list of images or videos from the API has been fetched, the bot will loop through it. For each image or video, the bot sequentially cycles through criteria to determine if it meets the requirements to be posted.
 
-At the first failed criterion, the bot discards the image or video under consideration and the loop begins anew with the next item.
+Photo processing is accomplished via a method belonging to the **Pexels_Photo_Processing** class in the _Nature_Poster_Photos_ module. Video processing is accomplished via a method belonging to the **Pexels_Video_Posting** class in the _Nature_Poster_Videos_ module.
+
+At the first failed criterion, the bot will discards the image or video under consideration and the loop will begin anew with the next item.
 
 These criteria include:
 
 - Photo or video description parsed from URL cannot contain a prohibited word, as this would be considered NSFW media.
 - A prohibited word cannot be present in the photo itself, either as a caption or displayed on any object, structure, or item of apparel, as this would be considered NSFW media.
 - Photo or video must have an acceptable file extension, i.e., jpg, png, etc., if photo.
-- Photo or video cannot be a duplicate post; it must not already be in either the database table named _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_.
-- Hash string of downloaded image must not already be in the database. This criterion is necessary because the same photo can be reposted on Pexels with a different id.
+- Photo or video cannot be a duplicate post; it must not already be in either the database table _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_.
+- Hash string of downloaded image must not already be in the database. This criterion is necessary because the same photo can be reposted on Pexels with a different ID.
 - Video file size must be smaller than 1 GB, and photo file size must be smaller than 4 MB.
-- Video duration must be shorter than 20 minutes long, to comply with Facebook posting limitations.
+- Video duration must be shorter than 20 minutes long, to comply with Facebook post limitations.
 
-If an image or video candidate survives all the foregoing criteria, then the bot will attempt to post it to Facebook by making a network request to the Facebook API.
+If an image or video candidate survives all the foregoing criteria, then the bot will attempt to post it to Facebook with a network request made to the Facebook API.
 
-If the attempt fails, the bot will move on to the next image and initiate the same sequential order of processing filters.
+If the attempt fails, the bot will move on to the next image or video and subject it to the same sequence of relevant filtering criteria.
 
-The script allows for five attempts before the loop searching through images is stopped. This behavior represents a crucial failsafe that ensures the script won't infinitely run in the event Facebook servers experience an ongoing issue.
+The script allows for five attempts before stopping the loop through the media list. This decision is a crucial failsafe meant to ensure the script will not become trapped in an infinite loop if Facebook servers are unresponsive due to an ongoing issue.
 
-Basically it calls Pexels API and searches photos by key terms through a word list in the master spreadsheet. It will pick through those search results to make sure they are not NSFW or contain any badwords, and also ones that haven't been posted before. Once it finds a photo that meets that criteria, it will post it to FB. Once posted to FB, it will log the post to a google sheet so we can keep track of when & what was posted. This helps us keep down on duplicate posts.
+After a successful media post to Facebook, the bot will still need to programmatically construct the post caption including a description, a Pexels URL, and a P.S. section with a link to the bot's Github repository.
 
-This script also uses OCR and Image Hashing as well. The OCR is used to detect bad words in photos. The hashing functions are used to make sure we don't post exact duplicates. Though in rare cases, some duplicates may still get through. I think Pexels also has a duplicate protection feature built in but this is more for our own redundancy more than anything else.
+The photo and caption on a Facebook post cannot be created simultaneously with a single POST request. For this reason, the bot must first create the image post, then edit and append the caption.
 
-Thanks for reading. If you have questions feel free to reach out to me and if you have any suggestions on how to improve the code, feel free to make those suggestions to me!
+Post officially complete, the bot will then insert metadata about the post (media description, media URL, hash string, file size, Facebook post ID, etc.) to the _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_ table.
 
-You can visit my FB page for this project at https://www.facebook.com/AutomaticNaturePosts/
+Post data recorded in these tables will be checked against in subsequent post attempts to prevent duplicates.
 
 ---
 
-1 big issue with this code and 2 minor things:
-
-TODO: (see below issues)
+## Issues and areas for improvement
 
 1. it will always look through the same photos and check them over and over until new photos are uploaded
    to replace the old ones, so this code may not be the most efficient. i.e. if there is a list of 5 photos,
