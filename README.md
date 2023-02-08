@@ -42,7 +42,7 @@ Once the list of images or videos from the API has been fetched, the bot will lo
 
 Photo processing is accomplished via a method belonging to the **Pexels_Photo_Processing** class in the _Nature_Poster_Photos_ module. Video processing is accomplished via a method belonging to the **Pexels_Video_Posting** class in the _Nature_Poster_Videos_ module.
 
-At the first failed criterion, the bot will discards the image or video under consideration and the loop will begin anew with the next item.
+At the first failed criterion, the bot will discard the image or video under consideration and the loop will begin anew with the next item.
 
 These criteria include:
 
