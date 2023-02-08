@@ -135,6 +135,13 @@ After a successful media post to Facebook, the bot still needs to programmatical
 
 The photo and caption on a Facebook post cannot be created simultaneously with a single POST request. For this reason, the bot must first create the image post, then edit and append the caption.
 
+```python
+# edit caption of existing fb post we just made
+fb.put_object(parent_object=f'{fb_page_id}_{post_id}', connection_name='',message=f'Description: {photo_description}\n\nPexels image link: {photo_permalink}\n\n'
+f'P.S. This Facebook post was created by a bot. To learn more about how it works, '
+f'check out the GitHub page here: {GitHub_Link}')
+```
+
 ### **Inserting data into sqlite3 db**
 
 Post officially complete, the bot will then insert metadata about the post (media description, media URL, hash string, file size, Facebook post ID, etc.) to the _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_ table.
