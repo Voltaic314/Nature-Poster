@@ -99,6 +99,21 @@ These criteria include:
 - Video file size must be smaller than 1 GB, and photo file size must be smaller than 4 MB.
 - Video duration must be shorter than 20 minutes long, to comply with Facebook post limitations.
 
+An instance of an image with text that would be picked up by OCR:
+![Storefront image with neon lettering](/documentation-images/text-in-img.jpg)
+
+### _Optical Character Recognition_
+
+OCR is a process carried out to detect and convert text in an image to an easily usable data type like a string.
+
+The bot integrates the Pytesseract OCR package and the cv2 computer vision package, which in conjunction work to detect characters in our images.
+
+cv2 functions are used to load an image from a file, then convert that image to a different color space. This second step is key.
+
+Lighting conditions are an extremely important factor in computer vision and are usually the difference between OCR algorithms failing or succeeding to detect characters.
+
+Our OCR image processing result is a string whose words are then checked for a bad or prohiibted word.
+
 ### **Posting to Facebook**
 
 If an image or video candidate survives all the foregoing criteria, then the bot attempts to post it to Facebook with a network request to the Facebook API.
