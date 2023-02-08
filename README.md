@@ -58,7 +58,7 @@ If an image or video candidate survives all the foregoing criteria, then the bot
 
 If the attempt fails, the bot will move on to the next image or video and subject it to the same sequence of relevant filtering criteria.
 
-The script allows for five attempts before stopping the loop through the media list. This decision is a crucial failsafe meant to ensure the script will not become trapped in an infinite loop if Facebook servers are unresponsive due to an ongoing issue.
+The script allows for five attempts before stopping the loop through the media list. This decision is a crucial fail-safe meant to ensure the script will not become trapped in an infinite loop if Facebook servers are unresponsive due to an ongoing issue.
 
 After a successful media post to Facebook, the bot will still need to programmatically construct the post caption including a description, a Pexels URL, and a P.S. section with a link to the bot's Github repository.
 
