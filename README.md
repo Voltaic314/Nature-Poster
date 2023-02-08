@@ -36,11 +36,48 @@ The posts include a short, simple description of the image or video and a URL li
 
 Nature Poster searches for and retrieves photos/videos via GET requests to the Pexels API.
 
+- Example endpoint with arbitrarily selected query:
+
+```
+GET https://api.pexels.com/v1/search?query=sunset&per_page=15
+```
+
+The script uses the pexels_api Python client library to make requests.
+
 Request parameters have been configured so that the API response always returns 15 photos or videos as a single page's worth of results. The script has access to further pages if no result from the initial batch converts to a successful Facebook post.
+
+- Example response for single photo:
+
+```json
+{
+  "id": 2014422,
+  "width": 3024,
+  "height": 3024,
+  "url": "https://www.pexels.com/photo/brown-rocks-during-golden-hour-2014422/",
+  "photographer": "Joey Farina",
+  "photographer_url": "https://www.pexels.com/@joey",
+  "photographer_id": 680589,
+  "avg_color": "#978E82",
+  "src": {
+    "original": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg",
+    "large2x": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "large": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+    "medium": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg?auto=compress&cs=tinysrgb&h=350",
+    "small": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg?auto=compress&cs=tinysrgb&h=130",
+    "portrait": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=1200&w=800",
+    "landscape": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
+    "tiny": "https://images.pexels.com/photos/2014422/pexels-photo-2014422.jpeg?auto=compress&cs=tinysrgb&dpr=1&fit=crop&h=200&w=280"
+  },
+  "liked": false,
+  "alt": "Brown Rocks During Golden Hour"
+}
+```
+
+A query to the search endpoint returns as data an object with a list of 15 photo objects like the one above.
 
 ### **Selecting a search term**
 
-The bot randomly selects a search term from a list of nature-related terms in a SQLite3 table named _Photo_Search_Terms_.
+The bot randomly selects a search term from a list of nature-related terms in a SQLite3 database table named _Photo_Search_Terms_.
 
 ![SQLite3 table GUI first ten rows in Photo_Search_Terms](/documentation-images/photo_search_terms.png)
 
