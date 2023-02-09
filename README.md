@@ -147,7 +147,7 @@ Another example caption:
 
 ### **Inserting data into sqlite3 db**
 
-Post officially complete, the bot will then insert metadata about the post (media description, media URL, hash string, file size, Facebook post ID, etc.) to the _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_ table.
+Post officially complete, the bot then inserts metadata about the post (media description, media URL, hash string, file size, Facebook post ID, etc.) into the _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_ table.
 
 Post data recorded in these tables will be checked against in subsequent post attempts to prevent duplicates.
 
@@ -155,19 +155,8 @@ Post data recorded in these tables will be checked against in subsequent post at
 
 ## Issues and areas for improvement
 
-1. it will always look through the same photos and check them over and over until new photos are uploaded
-   to replace the old ones, so this code may not be the most efficient. i.e. if there is a list of 5 photos,
-   and the first 4 don't meet the criteria, then it posts the last one... then another photo is uploaded to that list
-   on pexels, then now it will check the first 4 photos (again), skip the fifth one it posted before, and
-   now the new one and maybe post it. I could solve this problem by keeping a DB of checked post ID's, but
-   seems too storage intensive, might save a lot of resources elsewhere though.
+- The script does not keep a record of checked and disqualified photos or videos. Therefore these same media will be checked again in the future if the exact search term is selected once more. This is obviously inefficient. A solution might be to store the IDs of encountered and rejected media somewhere in the database, though this might become too storage intensive.
 
-2. The other thing is that if it has a good photo and tries to post it but FB is down, it will just discard that
-   photo altogether instead of trying to save it for a rainy day. There is a way to fix this but eh. I want it
-   to be completely automated so I'm not gonna bother.
+- If the bot attempts to post a qualified photo or video and Facebook is down for some reason, then the photo or video will be discarded. The bot will not save it for a resumed attempt once Facebook server issues are resolved.
 
-3. We don't have a way to check if the photo was deleted or not after it was posted. This is important to know
-   if you're going to train a ML model on these photos. As ones that were deleted obviously didn't fit the
-   nature photo theme. Which could throw off your data. I can add a column for that in the DB tables, but,
-   I'm not sure how I would check each post to see if it got deleted or not. Not without pinging FB API like
-   10,000 times a day. Maybe if any of you have a better solution, let me know.
+- There is presently no way of ascertaining whether the photo or video post has been manually deleted from Facebook. Manual deletion would happen in the case that the bot made a post and the image or video did not fit the nature theme. This information is important for training a machine learning model so it has data on which media were deleted and can make decisions based off this dataset. The only potential solution we can think of at the moment would be too impractical.
