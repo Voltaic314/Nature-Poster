@@ -91,8 +91,8 @@ At the first failed criterion, the bot discards the image or video under conside
 
 These criteria include:
 
-- Photo or video description parsed from URL cannot contain a prohibited word, as this would be considered NSFW media.
-- Photo itself cannot contain a prohibited word either as a caption or displayed on any object, structure, or item of apparel, as this would be considered NSFW media.
+- Photo or video description parsed from URL cannot contain a prohibited word from the "bad words" list stored in our database. A bad word for the bot is not only an inappropriate or curse word, but also a word like "man", because that would indicate the photo or video has a focus other than something nature-related.
+- Photo itself cannot contain a prohibited word either as a caption or displayed on any object, structure, or item of apparel, for the same two reasons mentioned in the above criterion.
 - Photo or video must have an acceptable file extension, i.e., jpg, png, etc., if photo.
 - Photo or video cannot be a duplicate post; it must not already be in either the database table _Nature_Bot_Logged_FB_Posts_ or _Nature_Bot_Logged_FB_Posts_Videos_.
 - Hash string of downloaded image must not already be in the database. This criterion is necessary because the same photo can be reposted on Pexels with a different ID.
@@ -102,7 +102,7 @@ These criteria include:
 An instance of an image with text that would be picked up by OCR:
 ![Storefront image with neon lettering](/documentation-images/text-in-img.jpg)
 
-### _Optical Character Recognition_
+### Optical Character Recognition
 
 OCR is a process carried out to detect and convert text in an image to an easily usable data type like a string.
 
@@ -112,7 +112,7 @@ cv2 functions are used to load an image from a file, then convert that image to 
 
 Lighting conditions are an extremely important factor in computer vision and are usually the difference between OCR algorithms failing or succeeding to detect characters.
 
-Our OCR image processing result is a string whose words are then checked for a bad or prohiibted word.
+Our OCR image processing result is a string whose words are then checked for a prohibited word, i.e., "man", "woman", "car", etc.
 
 ```python
 image_text = Image_Processing.ocr_text("image.jpg")
@@ -120,6 +120,14 @@ image_text = Image_Processing.ocr_text("image.jpg")
 if Text_Processing.there_are_badwords(image_text, bad_words_list):
       continue
 ```
+
+### **Image hashing**
+
+Image hashing is the process of creating a hash value (a fixed length number output code string mapped from some input) based on the visual data of an image.
+
+Similar images that look nearly identical will have the same hash.
+
+The bot uses an image hashing library to create a hash for every successful and discarded image. Hashes are stored alongside other post data for a successful post in the same database table row. They are used for comparison with hashes of images under review as one of two measures to prevent duplicates.
 
 ### **Posting to Facebook**
 
