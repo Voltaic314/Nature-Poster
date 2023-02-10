@@ -123,11 +123,21 @@ if Text_Processing.there_are_badwords(image_text, bad_words_list):
 
 ### **Image hashing**
 
-Image hashing is the process of creating a hash value (a fixed length number output code string mapped from some input) based on the visual data of an image.
+Image hashing is the process of creating a hash value (a fixed length output code string mapped from some input) based on the visual data of an image.
 
 Similar images that look nearly identical will have the same hash.
 
 The bot uses an image hashing library to create a hash for every successful and discarded image. Hashes are stored alongside other post data for a successful post in the same database table row. They are used for comparison with hashes of images under review as one of two measures to prevent duplicates.
+
+Example of an image hash being generated:
+
+```python
+return str(imagehash.dhash(Image.open(filename)))
+```
+
+```python
+"9f172786e71f1e00"
+```
 
 ### **Posting to Facebook**
 
