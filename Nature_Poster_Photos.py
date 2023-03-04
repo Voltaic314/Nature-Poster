@@ -42,7 +42,7 @@ class Pexels_Photo_Processing:
 
             photo_description = photo.description.replace("-", " ")
             photo_description_word_check = photo_description.split(" ")
-            photo_file_size = Image_Processing.get_file_size(photo.large)
+            photo_file_size = Image_Processing.get_file_size(photo.original)
             bad_words_list = database.retrieve_values_from_table_column("Bad_Words", "Bad_Words")
 
             # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
@@ -68,7 +68,7 @@ class Pexels_Photo_Processing:
                 continue
 
             # download the image
-            Image_Processing.write_image(photo.large2x, "image.jpg")
+            Image_Processing.write_image(photo.original, "image.jpg")
 
             # hash the image we just downloaded
             hash_str = Image_Processing.hash_image("image.jpg")
@@ -109,7 +109,7 @@ class Pexels_Photo_Processing:
                 database.log_to_DB(data_to_log, "Nature_Bot_Logged_FB_Posts")
                 print("Data has been logged to the database. All done!")
                 database.connect.close()
-                return data_to_log
+                return True
 
 
 def main():

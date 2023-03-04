@@ -22,7 +22,7 @@ class FB_Posting:
         fb_page_id = "101111365975816"
         post_url = f'https://graph.facebook.com/{fb_page_id}/photos'
         payload = {
-            "url": photo.large2x,
+            "url": photo.original,
             "access_token": config.config_stuff['FB_Access_Token']
         }
 
