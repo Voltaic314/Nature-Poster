@@ -2,7 +2,7 @@
 
 ### Developed by **Logan Maupin**
 
-I'm a student at the University of Arizona studying Applied Computing with an emphasis in Applied Artificial Intelligence. I hope to one day create and work on AI for detecting threats and/or aiding human development. Nature Poster is an automatic Facebook posting bot I developed with Python as a side project.
+Nature Poster is an automatic Facebook posting bot I developed with Python as a side project.
 
 If you have any questions or suggestions on how to improve the code, feel free to reach out to me!
 
