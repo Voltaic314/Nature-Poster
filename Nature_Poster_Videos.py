@@ -12,7 +12,7 @@ sheets spreadsheet so that we don't post it again.
 Some features of this script include: list comprehension, image hashing,
 optical character recognition, three different APIs, json parsing, and more.
 """
-import config  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
+import secrets  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
 import os  # needed to get the file paths
 import random  # Used to pick a random keyword to search when grabbing a video
 from pexels_api import API  # need this to get images to use from Pexels (our source of images for the project)
@@ -109,7 +109,7 @@ def main():
     CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
     db_path_and_name = os.path.join(CURRENT_DIRECTORY, "Nature_Bot_Data.db")
     database_instance = Database(db_path_and_name)
-    PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
+    PEXELS_API_KEY = secrets.secret_stuff['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
     search_terms = database_instance.retrieve_values_from_table_column("Photo_Search_Terms", "Terms")
     searched_term = str(random.choice(search_terms))
