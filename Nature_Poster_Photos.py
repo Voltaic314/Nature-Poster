@@ -10,7 +10,7 @@ that we don't post it again. Some features of this script include: list comprehe
 recognition, three different APIs, json parsing, and more.
 """
 
-import config  # used to get the secret info needed for our APIs - not uploaded to GitHub for security purposes
+import secrets  # used to get the secret info needed for our APIs - not uploaded to GitHub for security purposes
 import os
 import random
 from pexels_api import API
