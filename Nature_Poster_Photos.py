@@ -124,7 +124,7 @@ def main():
     CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
     db_path_and_name = os.path.join(CURRENT_DIRECTORY, "Nature_Bot_Data.db")
     database_instance = Database(db_path_and_name)
-    PEXELS_API_KEY = config.config_stuff3['PEXELS_API_KEY']
+    PEXELS_API_KEY = secrets.secret_stuff['PEXELS_API_KEY']
     api = API(PEXELS_API_KEY)
     search_terms = database_instance.retrieve_values_from_table_column("Photo_Search_Terms", "Terms")
     searched_term = str(random.choice(search_terms))

@@ -14,8 +14,6 @@ import os
 
 
 class Image_Processing:
-    def __init__(self):
-        pass
 
     @staticmethod
     def write_image(url: str, filename: str):

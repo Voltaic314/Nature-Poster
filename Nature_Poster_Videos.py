@@ -15,11 +15,11 @@ optical character recognition, three different APIs, json parsing, and more.
 import secrets  # used to get the secret sensitive info needed for our APIs - not uploaded to GitHub for security purposes
 import os  # needed to get the file paths
 import random  # Used to pick a random keyword to search when grabbing a video
+import requests
 from pexels_api import API  # need this to get images to use from Pexels (our source of images for the project)
 from datetime import datetime  # used for date and time in the FB log posting, so we know when things were posted to FB
 from database import Database
 from text_processing import Text_Processing
-from image_processing import Image_Processing
 from fb_posting import FB_Posting
 
 
@@ -43,7 +43,10 @@ class Pexels_Video_Posting:
         for video in videos:
             video_permalink = video.url
             video_direct_url = video.link
-            video_file_size = Image_Processing.get_file_size(video_direct_url)
+            # grabbing data from our selected url
+            requests_content_length = requests.get(video_direct_url)
+            # divides file size by 1000, so we can get how many kilobytes it is
+            video_file_size = float(requests_content_length.headers.get('content-length')) / 1000
             bad_words_list = database.retrieve_values_from_table_column("Bad_Words", "Bad_Words")
 
             # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
@@ -89,7 +92,8 @@ class Pexels_Video_Posting:
                     str(video_direct_url), float(video_file_size),
                 )
 
-                database.log_to_DB(formatted_tuple=data_to_log, table_to_add_values_to="Nature_Bot_Logged_FB_Posts_Videos")
+                database.log_to_DB(formatted_tuple=data_to_log,
+                                   table_to_add_values_to="Nature_Bot_Logged_FB_Posts_Videos")
                 print("Data has been logged to the database. All done!")
                 database.connect.close()
                 return data_to_log
@@ -119,7 +123,7 @@ def main():
     done = False
     while not done:
         done = Pexels_Video_Posting.process_videos(videos=api.get_video_entries(), attempted_posts=attempted_posts,
-                              database=database_instance, searched_term=searched_term)
+                                                   database=database_instance, searched_term=searched_term)
         if not done:
             api.search_next_page()
 
