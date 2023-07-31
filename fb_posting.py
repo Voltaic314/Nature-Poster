@@ -5,7 +5,7 @@ The purpose of this module is to create a list of methods that will assist in po
 """
 import requests
 import facebook
-import secrets
+import config
 
 
 class FB_Posting:
@@ -23,7 +23,7 @@ class FB_Posting:
         post_url = f'https://graph.facebook.com/{fb_page_id}/photos'
         payload = {
             "url": photo.original,
-            "access_token": secrets.secret_stuff['FB_Access_Token']
+            "access_token": config.secret_stuff['FB_Access_Token']
         }
 
         post_to_fb_request = requests.post(post_url, data=payload)
@@ -49,7 +49,7 @@ class FB_Posting:
             "file_url": video.link,
             "title": video.description,
             "description": message,
-            "access_token": secrets.secret_stuff['FB_Access_Token']
+            "access_token": config.secret_stuff['FB_Access_Token']
         }
 
         post_to_fb_request = requests.post(post_url, data=payload)
@@ -70,7 +70,7 @@ class FB_Posting:
         GitHub_Link = 'https://github.com/Voltaic314/Nature-Poster'
 
         # define fb variable for next line with our access info
-        fb = facebook.GraphAPI(access_token=secrets.secret_stuff['FB_Access_Token'])
+        fb = facebook.GraphAPI(access_token=config.secret_stuff['FB_Access_Token'])
 
         # edit caption of existing fb post we just made
         fb.put_object(parent_object=f'{fb_page_id}_{post_id}', connection_name='',
