@@ -6,7 +6,6 @@ This way we can store the methods here and then call them later in other project
 
 The overall goal is to use OOP techniques to create clean, testable, and reusable code.
 """
-
 import sqlite3
 
 
