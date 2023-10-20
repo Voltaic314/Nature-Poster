@@ -38,7 +38,13 @@ class Pexels_Photo_Processing:
         the code to stop running once the post has been logged to the spreadsheet.
         """
 
+        checked_photos = 0
+
         for photo in photos:
+
+            print(f'Checked {checked_photos} photos so far...')
+
+            checked_photos += 1
 
             photo_description = photo.description.replace("-", " ")
             photo_description_word_check = photo_description.split(" ")
@@ -54,17 +60,21 @@ class Pexels_Photo_Processing:
 
             # if the photo doesn't have an acceptable file extention to post, try another photo.
             if not Text_Processing.acceptable_extension_for_photo_posting(photo.extension):
+                print("Photo did not have an acceptable extension.")
                 continue
 
             # if the photo id is already in the database, we've posted it before, try another photo.
             if str(photo.id) in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts', 'ID'):
+                print("We've posted this before")
                 continue
 
             # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
             if photo_file_size >= 4000:
+                print("Image was too large")
                 continue
 
             if any(word in photo_description_word_check for word in bad_words_list):
+                print("Bad word in image description")
                 continue
 
             # download the image
@@ -77,12 +87,15 @@ class Pexels_Photo_Processing:
             if hash_str in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts', 'Image_Hash'):
                 continue
 
-            image_text = Image_Processing.ocr_text("image.jpg")
-            if Text_Processing.there_are_badwords(image_text, bad_words_list):
-                continue
+            ## Temporarily disabling OCR since it's practically pointless for this stuff anyway
+            ## mainly just trying to optimize this code a little more.
+            # image_text = Image_Processing.ocr_text("image.jpg")
+            # if Text_Processing.there_are_badwords(image_text, bad_words_list):
+            #     continue
 
             # make a network request to post the current photo to FB
             post_to_fb_request = FB_Posting.post_photo_to_fb(photo)
+            print(f'FB Response: {post_to_fb_request}')
             fb_post_id = Text_Processing.get_post_id_from_json(post_to_fb_request)
             successful_post = fb_post_id in post_to_fb_request
 
