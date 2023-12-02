@@ -17,21 +17,20 @@ from pexels_api import API
 from datetime import datetime
 from database import Database
 from text_processing import Text_Processing
-from image_processing import Image_Processing
 from fb_posting import FB_Posting
+from nature_photo import NaturePhoto
 
 
 class Pexels_Photo_Processing:
 
     @staticmethod
-    def process_photos(photos, attempted_posts, database):
+    def process_photos(photos, database: Database):
         """
         This is the function that primarily makes decisions with the photos. It goes through a series of if statements to
         figure out if the photo is worth posting to FB or not based on a given criteria below.
 
         :param photos: list of photos to iterate through, retrieved from
         the next function below.
-        :param attempted_posts: integer representing the number of times we've already tried to post an image.
         :param database: This represents the database class instance from the database.py file.
 
         :returns: Spreadsheet values to send, this will evaluate to True and allow
@@ -39,17 +38,16 @@ class Pexels_Photo_Processing:
         """
 
         checked_photos = 0
+        attempted_posts = 0
 
         for photo in photos:
+
+            current_photo = NaturePhoto(photo)
 
             print(f'Checked {checked_photos} photos so far...')
 
             checked_photos += 1
 
-            photo_description = photo.description.replace("-", " ")
-            photo_description_word_check = photo_description.split(" ")
-            photo_file_size = Image_Processing.get_file_size(photo.original)
-            bad_words_list = database.retrieve_values_from_table_column("Bad_Words", "Bad_Words")
 
             # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
             # in this case, if the function returns True, because of the done = False thing in the next function, it will
@@ -59,42 +57,26 @@ class Pexels_Photo_Processing:
                 return True
 
             # if the photo doesn't have an acceptable file extention to post, try another photo.
-            if not Text_Processing.acceptable_extension_for_photo_posting(photo.extension):
-                print("Photo did not have an acceptable extension.")
+            if current_photo.unacceptable_extension():
                 continue
 
             # if the photo id is already in the database, we've posted it before, try another photo.
-            if str(photo.id) in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts', 'ID'):
-                print("We've posted this before")
+            if current_photo.has_been_posted_to_FB_before():
                 continue
 
             # make sure the file size is less than 4 MB. (This is primarily for FB posting limitations).
-            if photo_file_size >= 4000:
-                print("Image was too large")
+            if current_photo.is_too_large():
                 continue
 
-            if any(word in photo_description_word_check for word in bad_words_list):
-                print("Bad word in image description")
+            if current_photo.caption_has_bad_words():
                 continue
-
-            # download the image
-            Image_Processing.write_image(photo.original, "image.jpg")
-
-            # hash the image we just downloaded
-            hash_str = Image_Processing.hash_image("image.jpg")
 
             # if the hash string of the image is already in the database, then we've posted a similar photo before.
-            if hash_str in database.retrieve_values_from_table_column('Nature_Bot_Logged_FB_Posts', 'Image_Hash'):
+            if current_photo.hash_in_db_already():
                 continue
 
-            ## Temporarily disabling OCR since it's practically pointless for this stuff anyway
-            ## mainly just trying to optimize this code a little more.
-            # image_text = Image_Processing.ocr_text("image.jpg")
-            # if Text_Processing.there_are_badwords(image_text, bad_words_list):
-            #     continue
-
             # make a network request to post the current photo to FB
-            post_to_fb_request = FB_Posting.post_photo_to_fb(photo)
+            post_to_fb_request = FB_Posting.post_photo_to_fb(current_photo)
             print(f'FB Response: {post_to_fb_request}')
             fb_post_id = Text_Processing.get_post_id_from_json(post_to_fb_request)
             successful_post = fb_post_id in post_to_fb_request
@@ -109,14 +91,14 @@ class Pexels_Photo_Processing:
 
                 dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
 
-                FB_Posting.edit_fb_post_caption_for_pexels_photo_posting(fb_post_id, photo_description, photo.url)
+                FB_Posting.edit_fb_post_caption_for_pexels_photo_posting(fb_post_id, current_photo.description, current_photo.url)
 
                 print("Caption has been edited successfully.")
 
                 data_to_log = (
-                    dt_string, str(post_to_fb_request), str(photo_description), str(photo.photographer),
-                    str(photo.id), str(photo.url), str(photo.large2x), str(photo.original),
-                    float(photo_file_size), hash_str
+                    dt_string, str(post_to_fb_request), str(current_photo.description), str(current_photo.photographer),
+                    str(current_photo.id), str(current_photo.url), str(current_photo.large2x), str(current_photo.original),
+                    float(current_photo.file_size), current_photo.hash_str
                 )
 
                 database.log_to_DB(data_to_log, "Nature_Bot_Logged_FB_Posts")
@@ -142,10 +124,9 @@ def main():
     search_terms = database_instance.retrieve_values_from_table_column("Photo_Search_Terms", "Terms")
     searched_term = str(random.choice(search_terms))
     api.search_photo(searched_term, page=1, results_per_page=15)
-    attempted_posts = 0
     done = False
     while not done:
-        done = Pexels_Photo_Processing.process_photos(photos=api.get_photo_entries(), attempted_posts=attempted_posts,
+        done = Pexels_Photo_Processing.process_photos(photos=api.get_photo_entries(),
                                                       database=database_instance)
         if not done:
             api.search_next_page()

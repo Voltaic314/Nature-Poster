@@ -21,6 +21,7 @@ from datetime import datetime  # used for date and time in the FB log posting, s
 from database import Database
 from text_processing import Text_Processing
 from fb_posting import FB_Posting
+from nature_video import NatureVideo
 
 
 class Pexels_Video_Posting:
@@ -41,14 +42,9 @@ class Pexels_Video_Posting:
         """
 
         for video in videos:
-            video_permalink = video.url
-            video_direct_url = video.link
-            # grabbing data from our selected url
-            requests_content_length = requests.get(video_direct_url)
-            # divides file size by 1000, so we can get how many kilobytes it is
-            video_file_size = float(requests_content_length.headers.get('content-length')) / 1000
-            bad_words_list = database.retrieve_values_from_table_column("Bad_Words", "Bad_Words")
 
+            current_video = NatureVideo(video)
+            
             # if we've picked 5 different photos, and they all fail to post to FB, there's probably something going on.
             # in this case, if the function returns True, because of the done = False thing in the next function, it will
             # kill the loop. In this case this is like a failsafe to make sure the script doesn't run forever in the case of
@@ -63,14 +59,14 @@ class Pexels_Video_Posting:
                 continue
 
             # make sure the file size is less than 1 GB. (This is primarily for FB posting limitations).
-            if video_file_size >= 1_000_000:
+            if current_video.too_large():
                 continue
 
             # If the video is greater than 20 minutes long, start over. (also for FB Positing limitations)
-            if video.duration >= 1_200:
+            if current_video.too_long():
                 continue
 
-            if Text_Processing.there_are_badwords(video.description.lower().split(" "), bad_words_list):
+            if current_video.caption_contains_bad_words():
                 continue
 
             post_to_fb_request = FB_Posting.post_video_to_fb(video)
@@ -87,9 +83,9 @@ class Pexels_Video_Posting:
                 dt_string = str(datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
 
                 data_to_log = (
-                    dt_string, str(post_to_fb_request), str(video.description), str(video.videographer),
-                    str(video.id), searched_term, int(video.duration), str(video_permalink),
-                    str(video_direct_url), float(video_file_size),
+                    dt_string, str(post_to_fb_request), str(current_video.description), str(current_video.videographer),
+                    str(current_video.id), searched_term, int(current_video.duration), str(current_video.url),
+                    str(current_video.link), float(current_video.file_size),
                 )
 
                 database.log_to_DB(formatted_tuple=data_to_log,
